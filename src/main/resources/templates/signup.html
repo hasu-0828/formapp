@@ -1,0 +1,651 @@
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>新規登録 - 蓮狐</title>
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        min-height: 100%;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-family:
+            "Yu Mincho",
+            "Hiragino Mincho ProN",
+            "Noto Serif JP",
+            serif;
+
+        color: #302d42;
+
+        background:
+            radial-gradient(
+                circle at 18% 22%,
+                rgba(216, 195, 245, 0.55),
+                transparent 28%
+            ),
+            radial-gradient(
+                circle at 83% 16%,
+                rgba(255, 238, 192, 0.45),
+                transparent 25%
+            ),
+            radial-gradient(
+                circle at 72% 84%,
+                rgba(185, 211, 237, 0.4),
+                transparent 30%
+            ),
+            linear-gradient(
+                135deg,
+                #f8f5fc 0%,
+                #eeebf7 48%,
+                #e6edf5 100%
+            );
+
+        position: relative;
+        overflow: hidden;
+    }
+
+
+    /* =========================================
+       月明かり
+       ========================================= */
+
+    body::before {
+
+        content: "";
+
+        position: fixed;
+
+        width: 360px;
+        height: 360px;
+
+        top: -170px;
+        right: -80px;
+
+        border-radius: 50%;
+
+        background:
+            radial-gradient(
+                circle,
+                rgba(255, 249, 220, 0.85) 0%,
+                rgba(255, 249, 220, 0.35) 42%,
+                transparent 70%
+            );
+
+        filter: blur(8px);
+
+        pointer-events: none;
+    }
+
+
+    /* =========================================
+       水面の光
+       ========================================= */
+
+    body::after {
+
+        content: "";
+
+        position: fixed;
+
+        width: 420px;
+        height: 230px;
+
+        bottom: -130px;
+        left: 50%;
+
+        transform: translateX(-50%);
+
+        border-radius: 50%;
+
+        background:
+            radial-gradient(
+                ellipse,
+                rgba(183, 162, 219, 0.35),
+                transparent 70%
+            );
+
+        filter: blur(15px);
+
+        pointer-events: none;
+    }
+
+
+    /* =========================================
+       登録カード
+       ========================================= */
+
+    .signup-container {
+
+        width: min(430px, calc(100% - 32px));
+
+        padding: 38px 35px 32px;
+
+        position: relative;
+        z-index: 1;
+
+        background:
+            linear-gradient(
+                145deg,
+                rgba(255,255,255,0.92),
+                rgba(249,247,253,0.82)
+            );
+
+        border: 1px solid rgba(255,255,255,0.95);
+
+        border-radius: 22px;
+
+        box-shadow:
+            0 20px 55px rgba(70, 55, 100, 0.15),
+            0 3px 10px rgba(70, 55, 100, 0.07);
+
+        backdrop-filter: blur(14px);
+    }
+
+
+    /* =========================================
+       CSSで作る蓮
+       ========================================= */
+
+    .lotus {
+
+        position: relative;
+
+        width: 58px;
+        height: 42px;
+
+        margin: 0 auto 14px;
+    }
+
+
+    .lotus::before,
+    .lotus::after {
+
+        content: "";
+
+        position: absolute;
+
+        bottom: 0;
+
+        width: 29px;
+        height: 42px;
+
+        border-radius:
+            100% 0 100% 0;
+
+        background:
+            linear-gradient(
+                135deg,
+                #d7bde8,
+                #a88bc0
+            );
+
+        opacity: 0.85;
+    }
+
+
+    .lotus::before {
+
+        left: 7px;
+
+        transform:
+            rotate(-25deg);
+    }
+
+
+    .lotus::after {
+
+        right: 7px;
+
+        transform:
+            rotate(25deg)
+            scaleX(-1);
+    }
+
+
+    .lotus-center {
+
+        position: absolute;
+
+        left: 50%;
+        bottom: 0;
+
+        width: 28px;
+        height: 43px;
+
+        transform:
+            translateX(-50%);
+
+        border-radius:
+            50% 50% 45% 45%;
+
+        background:
+            linear-gradient(
+                180deg,
+                #e7d4f0,
+                #b695ca
+            );
+
+        z-index: 2;
+    }
+
+
+    /* =========================================
+       タイトル
+       ========================================= */
+
+    h1 {
+
+        margin: 0;
+
+        text-align: center;
+
+        font-size: 28px;
+
+        font-weight: normal;
+
+        letter-spacing: 0.18em;
+
+        color: #403653;
+    }
+
+
+    .subtitle {
+
+        margin: 10px 0 28px;
+
+        text-align: center;
+
+        color: #81798e;
+
+        font-size: 13px;
+
+        letter-spacing: 0.08em;
+    }
+
+
+    /* =========================================
+       入力項目
+       ========================================= */
+
+    .form-group {
+
+        margin-bottom: 20px;
+    }
+
+
+    .form-group label {
+
+        display: block;
+
+        margin-bottom: 8px;
+
+        color: #5d536c;
+
+        font-size: 13px;
+
+        letter-spacing: 0.06em;
+    }
+
+
+    .form-group input {
+
+        width: 100%;
+
+        padding: 13px 14px;
+
+        border: 1px solid #dcd5e5;
+
+        border-radius: 10px;
+
+        outline: none;
+
+        background: rgba(255,255,255,0.82);
+
+        color: #383344;
+
+        font-family: inherit;
+
+        font-size: 14px;
+
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease,
+            background 0.2s ease;
+    }
+
+
+    .form-group input:focus {
+
+        border-color: #ad92c5;
+
+        background: white;
+
+        box-shadow:
+            0 0 0 3px rgba(173, 146, 197, 0.13);
+    }
+
+
+    /* =========================================
+       登録ボタン
+       ========================================= */
+
+    .signup-button {
+
+        width: 100%;
+
+        margin-top: 5px;
+
+        padding: 13px;
+
+        border: none;
+
+        border-radius: 10px;
+
+        cursor: pointer;
+
+        font-family: inherit;
+
+        font-size: 14px;
+
+        letter-spacing: 0.12em;
+
+        color: #ffffff;
+
+        background:
+            linear-gradient(
+                135deg,
+                #8d78a6,
+                #76618f
+            );
+
+        box-shadow:
+            0 6px 16px rgba(102, 78, 127, 0.2);
+
+        transition:
+            transform 0.15s ease,
+            box-shadow 0.15s ease,
+            filter 0.15s ease;
+    }
+
+
+    .signup-button:hover {
+
+        transform: translateY(-1px);
+
+        filter: brightness(1.05);
+
+        box-shadow:
+            0 8px 20px rgba(102, 78, 127, 0.27);
+    }
+
+
+    .signup-button:active {
+
+        transform: translateY(0);
+
+        box-shadow:
+            0 4px 10px rgba(102, 78, 127, 0.18);
+    }
+
+
+    /* =========================================
+       ログインへのリンク
+       ========================================= */
+
+    .login-area {
+
+        margin-top: 25px;
+
+        padding-top: 20px;
+
+        border-top: 1px solid #e8e2ee;
+
+        text-align: center;
+    }
+
+
+    .login-area p {
+
+        margin: 0 0 8px;
+
+        color: #8a8392;
+
+        font-size: 12px;
+    }
+
+
+    .login-area a {
+
+        color: #75618b;
+
+        text-decoration: none;
+
+        font-size: 13px;
+
+        letter-spacing: 0.05em;
+    }
+
+
+    .login-area a:hover {
+
+        color: #59456f;
+
+        text-decoration: underline;
+    }
+
+
+    /* =========================================
+       CSSで作る白狐
+       ========================================= */
+
+    .fox {
+
+        position: absolute;
+
+        right: 18px;
+        bottom: 14px;
+
+        width: 28px;
+        height: 22px;
+
+        opacity: 0.32;
+    }
+
+
+    .fox::before {
+
+        content: "";
+
+        position: absolute;
+
+        left: 4px;
+        bottom: 3px;
+
+        width: 20px;
+        height: 15px;
+
+        background:
+            linear-gradient(
+                145deg,
+                #eee9f1,
+                #cfc4d8
+            );
+
+        border-radius:
+            55% 55% 45% 45%;
+
+        border: 1px solid #d7cedd;
+    }
+
+
+    .fox::after {
+
+        content: "";
+
+        position: absolute;
+
+        left: 7px;
+        top: 0;
+
+        width: 14px;
+        height: 14px;
+
+        background:
+            linear-gradient(
+                145deg,
+                #f4f0f5,
+                #d8cedd
+            );
+
+        clip-path:
+            polygon(
+                0 100%,
+                12% 15%,
+                50% 42%,
+                88% 15%,
+                100% 100%
+            );
+
+        border-radius: 40%;
+    }
+
+
+    /* =========================================
+       スマートフォン
+       ========================================= */
+
+    @media (max-width: 500px) {
+
+        .signup-container {
+
+            width: calc(100% - 24px);
+
+            padding: 30px 22px 28px;
+
+            border-radius: 18px;
+        }
+
+
+        .lotus {
+
+            transform: scale(0.88);
+        }
+
+
+        h1 {
+
+            font-size: 24px;
+
+            letter-spacing: 0.13em;
+        }
+
+    }
+
+</style>
+
+
+<div class="signup-container">
+
+    <!-- 蓮 -->
+
+    <div class="lotus">
+        <div class="lotus-center"></div>
+    </div>
+
+
+    <!-- タイトル -->
+
+    <h1>
+        新規登録
+    </h1>
+
+
+    <p class="subtitle">
+        蓮池への新たな訪れ
+    </p>
+
+
+    <!-- 登録フォーム -->
+
+    <form
+        th:action="@{/signup}"
+        method="post">
+
+        <div class="form-group">
+
+            <label for="username">
+                ユーザー名
+            </label>
+
+            <input
+                type="text"
+                id="username"
+                name="username"
+                autocomplete="username"
+                required>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="password">
+                パスワード
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                name="password"
+                autocomplete="new-password"
+                required>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="signup-button">
+
+            登録
+
+        </button>
+
+    </form>
+
+
+    <!-- ログインへ -->
+
+    <div class="login-area">
+
+        <p>
+            すでにアカウントをお持ちの方
+        </p>
+
+        <a href="/login">
+            ログイン画面へ戻る
+        </a>
+
+    </div>
+
+
+    <!-- 白狐 -->
+
+    <div class="fox"></div>
+
+</div>
+

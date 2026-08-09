@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -18,11 +19,13 @@ import com.example.formapp.entity.Choice;
 import com.example.formapp.entity.Form;
 import com.example.formapp.entity.Question;
 import com.example.formapp.entity.Response;
+import com.example.formapp.entity.User;
 import com.example.formapp.repository.AnswerRepository;
 import com.example.formapp.repository.ChoiceRepository;
 import com.example.formapp.repository.FormRepository;
 import com.example.formapp.repository.QuestionRepository;
 import com.example.formapp.repository.ResponseRepository;
+import com.example.formapp.repository.UserRepository;
 
 @Controller
 public class HomeController {
@@ -32,19 +35,62 @@ public class HomeController {
     private final ChoiceRepository choiceRepository;
     private final ResponseRepository responseRepository;
     private final AnswerRepository answerRepository;
+    private final UserRepository userRepository;
 
     public HomeController(
             FormRepository formRepository,
             QuestionRepository questionRepository,
             ChoiceRepository choiceRepository,
             ResponseRepository responseRepository,
-            AnswerRepository answerRepository) {
+            AnswerRepository answerRepository,
+            UserRepository userRepository) {
 
         this.formRepository = formRepository;
         this.questionRepository = questionRepository;
         this.choiceRepository = choiceRepository;
         this.responseRepository = responseRepository;
         this.answerRepository = answerRepository;
+        this.userRepository = userRepository;
+    }
+
+
+    /*
+     * ==========================================
+     * ログイン中のユーザーを取得
+     * ==========================================
+     */
+
+    private User getCurrentUser(
+            Authentication authentication) {
+
+        String username =
+                authentication.getName();
+
+        return userRepository
+                .findByUsername(username)
+                .orElseThrow();
+    }
+
+
+    /*
+     * ==========================================
+     * フォームの所有者を確認
+     * ==========================================
+     */
+
+    private void checkFormOwner(
+            Form form,
+            User user) {
+
+        if (form.getUser() == null
+                || !form.getUser()
+                        .getId()
+                        .equals(user.getId())) {
+
+            throw new IllegalArgumentException(
+                    "このフォームを操作する権限がありません。"
+            );
+        }
     }
 
 
@@ -64,7 +110,8 @@ public class HomeController {
             return;
         }
 
-        Choice choice = new Choice();
+        Choice choice =
+                new Choice();
 
         choice.setChoiceText(
                 choiceText.trim()
@@ -87,11 +134,16 @@ public class HomeController {
      */
 
     @GetMapping("/")
-    public String index(Model model) {
+    public String index(
+            Model model,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         model.addAttribute(
                 "forms",
-                formRepository.findAll()
+                formRepository.findByUser(user)
         );
 
         return "index";
@@ -120,9 +172,14 @@ public class HomeController {
     @PostMapping("/form/create")
     public String createForm(
             @RequestParam String title,
-            @RequestParam String description) {
+            @RequestParam String description,
+            Authentication authentication) {
 
-        Form form = new Form();
+        User user =
+                getCurrentUser(authentication);
+
+        Form form =
+                new Form();
 
         form.setTitle(
                 title
@@ -136,6 +193,10 @@ public class HomeController {
                 false
         );
 
+        form.setUser(
+                user
+        );
+
         formRepository.save(
                 form
         );
@@ -147,19 +208,26 @@ public class HomeController {
     /*
      * ==========================================
      * フォーム編集画面
-     *
-     * フォーム名・説明を再編集する
      * ==========================================
      */
 
     @GetMapping("/form/{id}/edit")
     public String editFormPage(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(id)
                         .orElseThrow();
+
+        checkFormOwner(
+                form,
+                user
+        );
 
         model.addAttribute(
                 "form",
@@ -173,10 +241,6 @@ public class HomeController {
     /*
      * ==========================================
      * フォーム編集保存
-     *
-     * フォーム名・説明を更新する
-     *
-     * 公開状態は変更しない
      * ==========================================
      */
 
@@ -184,42 +248,32 @@ public class HomeController {
     public String editForm(
             @PathVariable Long id,
             @RequestParam String title,
-            @RequestParam String description) {
+            @RequestParam String description,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(id)
                         .orElseThrow();
 
-        /*
-         * フォーム名を更新
-         */
+        checkFormOwner(
+                form,
+                user
+        );
 
         form.setTitle(
                 title
         );
 
-
-        /*
-         * 説明を更新
-         */
-
         form.setDescription(
                 description
         );
 
-
-        /*
-         * 保存
-         */
-
         formRepository.save(
                 form
         );
-
-
-        /*
-         * フォーム詳細へ戻る
-         */
 
         return "redirect:/form/" + id;
     }
@@ -234,11 +288,20 @@ public class HomeController {
     @GetMapping("/form/{id}")
     public String formDetail(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(id)
                         .orElseThrow();
+
+        checkFormOwner(
+                form,
+                user
+        );
 
         model.addAttribute(
                 "form",
@@ -287,7 +350,20 @@ public class HomeController {
     @GetMapping("/form/{id}/question/create")
     public String createQuestion(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
+
+        Form form =
+                formRepository.findById(id)
+                        .orElseThrow();
+
+        checkFormOwner(
+                form,
+                user
+        );
 
         model.addAttribute(
                 "formId",
@@ -301,8 +377,6 @@ public class HomeController {
     /*
      * ==========================================
      * 質問追加
-     *
-     * choices を複数受け取る
      * ==========================================
      */
 
@@ -317,11 +391,20 @@ public class HomeController {
             boolean required,
             @RequestParam(
                     required = false)
-            List<String> choices) {
+            List<String> choices,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(id)
                         .orElseThrow();
+
+        checkFormOwner(
+                form,
+                user
+        );
 
         Question question =
                 new Question();
@@ -356,21 +439,13 @@ public class HomeController {
                 question
         );
 
-
-        /*
-         * ==========================================
-         * 選択式の場合
-         *
-         * 送られてきた選択肢をすべて保存
-         * ==========================================
-         */
-
         if (questionType.equals("radio")
                 || questionType.equals("checkbox")) {
 
             if (choices != null) {
 
-                for (String choiceText : choices) {
+                for (String choiceText :
+                        choices) {
 
                     saveChoice(
                             question,
@@ -394,21 +469,24 @@ public class HomeController {
     public String editQuestionPage(
             @PathVariable Long formId,
             @PathVariable Long questionId,
-            Model model) {
+            Model model,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(formId)
                         .orElseThrow();
 
+        checkFormOwner(
+                form,
+                user
+        );
+
         Question question =
                 questionRepository.findById(questionId)
                         .orElseThrow();
-
-
-        /*
-         * 別のフォームの質問を
-         * 編集できないようにする
-         */
 
         if (!question.getForm().getId()
                 .equals(form.getId())) {
@@ -418,12 +496,10 @@ public class HomeController {
             );
         }
 
-
         List<Choice> choices =
                 choiceRepository.findByQuestionId(
                         questionId
                 );
-
 
         model.addAttribute(
                 "form",
@@ -447,8 +523,6 @@ public class HomeController {
     /*
      * ==========================================
      * 質問編集保存
-     *
-     * choices を複数受け取る
      * ==========================================
      */
 
@@ -464,21 +538,24 @@ public class HomeController {
             boolean required,
             @RequestParam(
                     required = false)
-            List<String> choices) {
+            List<String> choices,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(formId)
                         .orElseThrow();
 
+        checkFormOwner(
+                form,
+                user
+        );
+
         Question question =
                 questionRepository.findById(questionId)
                         .orElseThrow();
-
-
-        /*
-         * 別のフォームの質問を
-         * 編集できないようにする
-         */
 
         if (!question.getForm().getId()
                 .equals(form.getId())) {
@@ -487,13 +564,6 @@ public class HomeController {
                     "この質問は指定されたフォームに属していません。"
             );
         }
-
-
-        /*
-         * ==========================================
-         * ① 質問本体を更新
-         * ==========================================
-         */
 
         question.setQuestionText(
                 questionText
@@ -510,15 +580,6 @@ public class HomeController {
         questionRepository.save(
                 question
         );
-
-
-        /*
-         * ==========================================
-         * ② 既存の選択肢を削除
-         *
-         * 削除する前に分岐設定を解除する
-         * ==========================================
-         */
 
         List<Choice> oldChoices =
                 choiceRepository.findByQuestionId(
@@ -540,19 +601,13 @@ public class HomeController {
                 oldChoices
         );
 
-
-        /*
-         * ==========================================
-         * ③ 新しい選択肢を保存
-         * ==========================================
-         */
-
         if (questionType.equals("radio")
                 || questionType.equals("checkbox")) {
 
             if (choices != null) {
 
-                for (String choiceText : choices) {
+                for (String choiceText :
+                        choices) {
 
                     saveChoice(
                             question,
@@ -562,11 +617,6 @@ public class HomeController {
             }
         }
 
-
-        /*
-         * フォーム詳細へ戻る
-         */
-
         return "redirect:/form/" + formId;
     }
 
@@ -574,6 +624,9 @@ public class HomeController {
     /*
      * ==========================================
      * 回答画面
+     *
+     * ここは公開フォームなので
+     * 所有者チェックはしない
      * ==========================================
      */
 
@@ -591,17 +644,14 @@ public class HomeController {
             return "form-not-published";
         }
 
-
         var questions =
                 questionRepository
                         .findByFormIdOrderByQuestionOrderAsc(
                                 id
                         );
 
-
         Map<Long, List<Choice>> questionChoices =
                 new HashMap<>();
-
 
         for (Question question : questions) {
 
@@ -612,7 +662,6 @@ public class HomeController {
                     )
             );
         }
-
 
         model.addAttribute(
                 "form",
@@ -628,7 +677,6 @@ public class HomeController {
                 "questionChoices",
                 questionChoices
         );
-
 
         return "answer-form";
     }
@@ -649,7 +697,6 @@ public class HomeController {
                 formRepository.findById(id)
                         .orElseThrow();
 
-
         Response response =
                 new Response();
 
@@ -661,49 +708,16 @@ public class HomeController {
                 response
         );
 
-
-        /*
-         * ==========================================
-         * 質問一覧を取得
-         * ==========================================
-         */
-
         var questions =
                 questionRepository
                         .findByFormIdOrderByQuestionOrderAsc(
                                 id
                         );
 
-
-        /*
-         * ==========================================
-         * 各質問の回答を保存
-         * ==========================================
-         */
-
         for (Question question : questions) {
 
             String key =
                     "question-" + question.getId();
-
-
-            /*
-             * ==========================================
-             * チェックボックス
-             *
-             * 複数選択された回答を
-             * 1つのAnswerにまとめる
-             *
-             * 例：
-             *
-             * 赤
-             * 青
-             *
-             * ↓
-             *
-             * 赤,青
-             * ==========================================
-             */
 
             if (question.getQuestionType()
                     .equals("checkbox")) {
@@ -711,25 +725,14 @@ public class HomeController {
                 List<String> selectedValues =
                         params.get(key);
 
-
-                /*
-                 * 回答がない場合
-                 */
-
                 if (selectedValues == null
                         || selectedValues.isEmpty()) {
 
                     continue;
                 }
 
-
-                /*
-                 * 空の回答を除外
-                 */
-
                 List<String> validValues =
                         new ArrayList<>();
-
 
                 for (String value :
                         selectedValues) {
@@ -743,23 +746,16 @@ public class HomeController {
                     }
                 }
 
-
                 if (validValues.isEmpty()) {
 
                     continue;
                 }
-
-
-                /*
-                 * カンマ区切りで保存
-                 */
 
                 String answerText =
                         String.join(
                                 ",",
                                 validValues
                         );
-
 
                 Answer answer =
                         new Answer();
@@ -780,30 +776,17 @@ public class HomeController {
                         answer
                 );
 
-
                 continue;
             }
 
-
-            /*
-             * ==========================================
-             * 記述式・ラジオボタン
-             *
-             * 複数値ではないので
-             * getFirst() を使用
-             * ==========================================
-             */
-
             String answerText =
                     params.getFirst(key);
-
 
             if (answerText == null
                     || answerText.isBlank()) {
 
                 continue;
             }
-
 
             Answer answer =
                     new Answer();
@@ -825,13 +808,6 @@ public class HomeController {
             );
         }
 
-
-        /*
-         * ==========================================
-         * 回答完了画面
-         * ==========================================
-         */
-
         return "answer-complete";
     }
 
@@ -844,11 +820,20 @@ public class HomeController {
 
     @PostMapping("/form/{id}/publish")
     public String publishForm(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(id)
                         .orElseThrow();
+
+        checkFormOwner(
+                form,
+                user
+        );
 
         form.setPublished(
                 true
@@ -870,11 +855,20 @@ public class HomeController {
 
     @PostMapping("/form/{id}/unpublish")
     public String unpublishForm(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(id)
                         .orElseThrow();
+
+        checkFormOwner(
+                form,
+                user
+        );
 
         form.setPublished(
                 false
@@ -897,24 +891,31 @@ public class HomeController {
     @GetMapping("/form/{id}/responses")
     public String responses(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(id)
                         .orElseThrow();
 
+        checkFormOwner(
+                form,
+                user
+        );
 
         List<Response> responses =
                 responseRepository.findByFormId(
                         id
                 );
 
-
         Map<Long, List<Answer>> responseAnswers =
                 new HashMap<>();
 
-
-        for (Response response : responses) {
+        for (Response response :
+                responses) {
 
             responseAnswers.put(
                     response.getId(),
@@ -923,7 +924,6 @@ public class HomeController {
                     )
             );
         }
-
 
         model.addAttribute(
                 "form",
@@ -940,7 +940,6 @@ public class HomeController {
                 responseAnswers
         );
 
-
         return "responses";
     }
 
@@ -954,18 +953,20 @@ public class HomeController {
     @GetMapping("/form/{id}/statistics")
     public String statistics(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(id)
                         .orElseThrow();
 
-
-        /*
-         * ==========================================
-         * 質問一覧
-         * ==========================================
-         */
+        checkFormOwner(
+                form,
+                user
+        );
 
         List<Question> questions =
                 questionRepository
@@ -973,30 +974,16 @@ public class HomeController {
                                 id
                         );
 
-
-        /*
-         * ==========================================
-         * 回答一覧
-         * ==========================================
-         */
-
         List<Response> responses =
                 responseRepository.findByFormId(
                         id
                 );
 
-
-        /*
-         * ==========================================
-         * 質問ごとの選択肢
-         * ==========================================
-         */
-
         Map<Long, List<Choice>> questionChoices =
                 new HashMap<>();
 
-
-        for (Question question : questions) {
+        for (Question question :
+                questions) {
 
             questionChoices.put(
                     question.getId(),
@@ -1006,30 +993,22 @@ public class HomeController {
             );
         }
 
-
-        /*
-         * ==========================================
-         * 質問ごとの回答一覧
-         * ==========================================
-         */
-
         Map<Long, List<Answer>> questionAnswers =
                 new HashMap<>();
 
-
-        for (Question question : questions) {
+        for (Question question :
+                questions) {
 
             List<Answer> answers =
                     new ArrayList<>();
 
-
-            for (Response response : responses) {
+            for (Response response :
+                    responses) {
 
                 List<Answer> responseAnswerList =
                         answerRepository.findByResponseId(
                                 response.getId()
                         );
-
 
                 for (Answer answer :
                         responseAnswerList) {
@@ -1037,7 +1016,9 @@ public class HomeController {
                     if (answer.getQuestion() != null
                             && answer.getQuestion()
                                     .getId()
-                                    .equals(question.getId())) {
+                                    .equals(
+                                            question.getId()
+                                    )) {
 
                         answers.add(
                                 answer
@@ -1046,58 +1027,36 @@ public class HomeController {
                 }
             }
 
-
             questionAnswers.put(
                     question.getId(),
                     answers
             );
         }
 
-
-        /*
-         * ==========================================
-         * 選択肢ごとの回答数
-         *
-         * 質問ID
-         *     ↓
-         * 選択肢
-         *     ↓
-         * 回答数
-         * ==========================================
-         */
-
         Map<Long, Map<String, Integer>> choiceCounts =
                 new HashMap<>();
 
-
-        for (Question question : questions) {
+        for (Question question :
+                questions) {
 
             if (!question.getQuestionType()
                     .equals("radio")
                     && !question.getQuestionType()
-                    .equals("checkbox")) {
+                            .equals("checkbox")) {
 
                 continue;
             }
 
-
             Map<String, Integer> counts =
                     new HashMap<>();
-
-
-            /*
-             * ==========================================
-             * すべての選択肢を0票で登録
-             * ==========================================
-             */
 
             List<Choice> choices =
                     questionChoices.get(
                             question.getId()
                     );
 
-
-            for (Choice choice : choices) {
+            for (Choice choice :
+                    choices) {
 
                 counts.put(
                         choice.getChoiceText(),
@@ -1105,39 +1064,24 @@ public class HomeController {
                 );
             }
 
-
-            /*
-             * ==========================================
-             * 回答を取得
-             * ==========================================
-             */
-
             List<Answer> answers =
                     questionAnswers.get(
                             question.getId()
                     );
 
-
             if (answers != null) {
 
-                for (Answer answer : answers) {
+                for (Answer answer :
+                        answers) {
 
                     String answerText =
                             answer.getAnswerText();
-
 
                     if (answerText == null
                             || answerText.isBlank()) {
 
                         continue;
                     }
-
-
-                    /*
-                     * ==========================================
-                     * ラジオボタン
-                     * ==========================================
-                     */
 
                     if (question.getQuestionType()
                             .equals("radio")) {
@@ -1149,29 +1093,11 @@ public class HomeController {
                                         0
                                 ) + 1
                         );
-                    }
 
-
-                    /*
-                     * ==========================================
-                     * チェックボックス
-                     *
-                     * 例：
-                     *
-                     * 赤,青
-                     *
-                     * ↓
-                     *
-                     * 赤 → 1
-                     * 青 → 1
-                     * ==========================================
-                     */
-
-                    else {
+                    } else {
 
                         String[] selectedChoices =
                                 answerText.split(",");
-
 
                         for (String selectedChoice :
                                 selectedChoices) {
@@ -1179,12 +1105,10 @@ public class HomeController {
                             String choiceText =
                                     selectedChoice.trim();
 
-
                             if (choiceText.isEmpty()) {
 
                                 continue;
                             }
-
 
                             counts.put(
                                     choiceText,
@@ -1198,42 +1122,29 @@ public class HomeController {
                 }
             }
 
-
             choiceCounts.put(
                     question.getId(),
                     counts
             );
         }
 
-
-        /*
-         * ==========================================
-         * 質問ごとの回答率
-         *
-         * 回答数 ÷ 回答者数 × 100
-         * ==========================================
-         */
-
         Map<Long, Integer> answerRates =
                 new HashMap<>();
 
-
-        for (Question question : questions) {
+        for (Question question :
+                questions) {
 
             List<Answer> answers =
                     questionAnswers.get(
                             question.getId()
                     );
 
-
             int answerCount =
                     answers != null
                             ? answers.size()
                             : 0;
 
-
             int rate = 0;
-
 
             if (!responses.isEmpty()) {
 
@@ -1245,19 +1156,11 @@ public class HomeController {
                         );
             }
 
-
             answerRates.put(
                     question.getId(),
                     rate
             );
         }
-
-
-        /*
-         * ==========================================
-         * Modelへ渡す
-         * ==========================================
-         */
 
         model.addAttribute(
                 "form",
@@ -1294,7 +1197,6 @@ public class HomeController {
                 answerRates
         );
 
-
         return "statistics";
     }
 
@@ -1308,12 +1210,20 @@ public class HomeController {
     @GetMapping("/form/{id}/branch")
     public String branchSettings(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(id)
                         .orElseThrow();
 
+        checkFormOwner(
+                form,
+                user
+        );
 
         List<Question> questions =
                 questionRepository
@@ -1321,12 +1231,11 @@ public class HomeController {
                                 id
                         );
 
-
         Map<Long, List<Choice>> questionChoices =
                 new HashMap<>();
 
-
-        for (Question question : questions) {
+        for (Question question :
+                questions) {
 
             questionChoices.put(
                     question.getId(),
@@ -1335,7 +1244,6 @@ public class HomeController {
                     )
             );
         }
-
 
         model.addAttribute(
                 "form",
@@ -1352,7 +1260,6 @@ public class HomeController {
                 questionChoices
         );
 
-
         return "branch-settings";
     }
 
@@ -1366,7 +1273,20 @@ public class HomeController {
     @PostMapping("/form/{id}/branch")
     public String saveBranchSettings(
             @PathVariable Long id,
-            @RequestParam Map<String, String> params) {
+            @RequestParam Map<String, String> params,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
+
+        Form form =
+                formRepository.findById(id)
+                        .orElseThrow();
+
+        checkFormOwner(
+                form,
+                user
+        );
 
         List<Question> questions =
                 questionRepository
@@ -1374,37 +1294,22 @@ public class HomeController {
                                 id
                         );
 
-
-        for (Question question : questions) {
-
-            /*
-             * ==========================================
-             * ① 選択肢による分岐
-             * ==========================================
-             */
+        for (Question question :
+                questions) {
 
             List<Choice> choices =
                     choiceRepository.findByQuestionId(
                             question.getId()
                     );
 
-
-            for (Choice choice : choices) {
+            for (Choice choice :
+                    choices) {
 
                 String key =
                         "choice-" + choice.getId();
 
-
                 String nextQuestionId =
                         params.get(key);
-
-
-                /*
-                 * 未設定
-                 *
-                 * → 分岐なし
-                 * → フォーム終了
-                 */
 
                 if (nextQuestionId == null
                         || nextQuestionId.isBlank()) {
@@ -1420,38 +1325,26 @@ public class HomeController {
                                     nextQuestionId
                             );
 
-
                     Question nextQuestion =
                             questionRepository
                                     .findById(nextId)
                                     .orElseThrow();
-
 
                     choice.setNextQuestion(
                             nextQuestion
                     );
                 }
 
-
                 choiceRepository.save(
                         choice
                 );
             }
 
-
-            /*
-             * ==========================================
-             * ② 質問自身の次の質問
-             * ==========================================
-             */
-
             String questionKey =
                     "question-" + question.getId();
 
-
             String nextQuestionId =
                     params.get(questionKey);
-
 
             if (nextQuestionId == null
                     || nextQuestionId.isBlank()) {
@@ -1467,24 +1360,20 @@ public class HomeController {
                                 nextQuestionId
                         );
 
-
                 Question nextQuestion =
                         questionRepository
                                 .findById(nextId)
                                 .orElseThrow();
-
 
                 question.setNextQuestion(
                         nextQuestion
                 );
             }
 
-
             questionRepository.save(
                     question
             );
         }
-
 
         return "redirect:/form/" + id + "/branch";
     }
@@ -1498,12 +1387,20 @@ public class HomeController {
 
     @PostMapping("/form/{id}/delete")
     public String deleteForm(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(id)
                         .orElseThrow();
 
+        checkFormOwner(
+                form,
+                user
+        );
 
         List<Question> questions =
                 questionRepository
@@ -1511,53 +1408,38 @@ public class HomeController {
                                 id
                         );
 
-
-        /*
-         * ① Answerを削除
-         */
-
         List<Response> responses =
                 responseRepository.findByFormId(
                         id
                 );
 
-
-        for (Response response : responses) {
+        for (Response response :
+                responses) {
 
             List<Answer> answers =
                     answerRepository.findByResponseId(
                             response.getId()
                     );
 
-
             answerRepository.deleteAll(
                     answers
             );
         }
 
-
-        /*
-         * ② Responseを削除
-         */
-
         responseRepository.deleteAll(
                 responses
         );
 
-
-        /*
-         * ③ Choiceの分岐設定を解除
-         */
-
-        for (Question question : questions) {
+        for (Question question :
+                questions) {
 
             List<Choice> choices =
                     choiceRepository.findByQuestionId(
                             question.getId()
                     );
 
-
-            for (Choice choice : choices) {
+            for (Choice choice :
+                    choices) {
 
                 choice.setNextQuestion(
                         null
@@ -1569,12 +1451,8 @@ public class HomeController {
             }
         }
 
-
-        /*
-         * ④ Questionの分岐設定を解除
-         */
-
-        for (Question question : questions) {
+        for (Question question :
+                questions) {
 
             question.setNextQuestion(
                     null
@@ -1585,42 +1463,26 @@ public class HomeController {
             );
         }
 
-
-        /*
-         * ⑤ Choiceを削除
-         */
-
-        for (Question question : questions) {
+        for (Question question :
+                questions) {
 
             List<Choice> choices =
                     choiceRepository.findByQuestionId(
                             question.getId()
                     );
 
-
             choiceRepository.deleteAll(
                     choices
             );
         }
 
-
-        /*
-         * ⑥ Questionを削除
-         */
-
         questionRepository.deleteAll(
                 questions
         );
 
-
-        /*
-         * ⑦ Formを削除
-         */
-
         formRepository.delete(
                 form
         );
-
 
         return "redirect:/";
     }
@@ -1632,25 +1494,28 @@ public class HomeController {
      * ==========================================
      */
 
-    @PostMapping("/form/{formId}/question/{questionId}/delete")
+    @PostMapping(
+            "/form/{formId}/question/{questionId}/delete")
     public String deleteQuestion(
             @PathVariable Long formId,
-            @PathVariable Long questionId) {
+            @PathVariable Long questionId,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
 
         Form form =
                 formRepository.findById(formId)
                         .orElseThrow();
 
+        checkFormOwner(
+                form,
+                user
+        );
 
         Question question =
                 questionRepository.findById(questionId)
                         .orElseThrow();
-
-
-        /*
-         * 別のフォームの質問を
-         * 削除できないようにする
-         */
 
         if (!question.getForm().getId()
                 .equals(form.getId())) {
@@ -1660,26 +1525,21 @@ public class HomeController {
             );
         }
 
-
-        /*
-         * ① この質問への回答を削除
-         */
-
         List<Response> responses =
                 responseRepository.findByFormId(
                         formId
                 );
 
-
-        for (Response response : responses) {
+        for (Response response :
+                responses) {
 
             List<Answer> answers =
                     answerRepository.findByResponseId(
                             response.getId()
                     );
 
-
-            for (Answer answer : answers) {
+            for (Answer answer :
+                    answers) {
 
                 if (answer.getQuestion() != null
                         && answer.getQuestion()
@@ -1693,23 +1553,14 @@ public class HomeController {
             }
         }
 
-
-        /*
-         * ② 他の質問からの分岐を解除
-         */
-
         List<Question> questions =
                 questionRepository
                         .findByFormIdOrderByQuestionOrderAsc(
                                 formId
                         );
 
-
-        for (Question otherQuestion : questions) {
-
-            /*
-             * 質問自身の分岐先
-             */
+        for (Question otherQuestion :
+                questions) {
 
             if (otherQuestion.getNextQuestion() != null
                     && otherQuestion
@@ -1726,18 +1577,13 @@ public class HomeController {
                 );
             }
 
-
-            /*
-             * 選択肢の分岐先
-             */
-
             List<Choice> choices =
                     choiceRepository.findByQuestionId(
                             otherQuestion.getId()
                     );
 
-
-            for (Choice choice : choices) {
+            for (Choice choice :
+                    choices) {
 
                 if (choice.getNextQuestion() != null
                         && choice
@@ -1756,18 +1602,13 @@ public class HomeController {
             }
         }
 
-
-        /*
-         * ③ この質問の選択肢を削除
-         */
-
         List<Choice> choices =
                 choiceRepository.findByQuestionId(
                         questionId
                 );
 
-
-        for (Choice choice : choices) {
+        for (Choice choice :
+                choices) {
 
             choice.setNextQuestion(
                     null
@@ -1778,24 +1619,13 @@ public class HomeController {
             );
         }
 
-
         choiceRepository.deleteAll(
                 choices
         );
 
-
-        /*
-         * ④ 質問を削除
-         */
-
         questionRepository.delete(
                 question
         );
-
-
-        /*
-         * ⑤ 質問番号を振り直す
-         */
 
         List<Question> remainingQuestions =
                 questionRepository
@@ -1803,9 +1633,7 @@ public class HomeController {
                                 formId
                         );
 
-
         int order = 1;
-
 
         for (Question remainingQuestion :
                 remainingQuestions) {
@@ -1821,7 +1649,6 @@ public class HomeController {
             order++;
         }
 
-
         return "redirect:/form/" + formId;
     }
 
@@ -1832,17 +1659,30 @@ public class HomeController {
      * ==========================================
      */
 
-    @GetMapping("/form/{formId}/question/{questionId}/up")
+    @GetMapping(
+            "/form/{formId}/question/{questionId}/up")
     public String moveQuestionUp(
             @PathVariable Long formId,
-            @PathVariable Long questionId) {
+            @PathVariable Long questionId,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
+
+        Form form =
+                formRepository.findById(formId)
+                        .orElseThrow();
+
+        checkFormOwner(
+                form,
+                user
+        );
 
         List<Question> questions =
                 questionRepository
                         .findByFormIdOrderByQuestionOrderAsc(
                                 formId
                         );
-
 
         for (int i = 1;
              i < questions.size();
@@ -1851,41 +1691,34 @@ public class HomeController {
             Question current =
                     questions.get(i);
 
-
             Question previous =
                     questions.get(i - 1);
 
-
-            if (current.getId().equals(questionId)) {
+            if (current.getId()
+                    .equals(questionId)) {
 
                 int temp =
                         current.getQuestionOrder();
-
 
                 current.setQuestionOrder(
                         previous.getQuestionOrder()
                 );
 
-
                 previous.setQuestionOrder(
                         temp
                 );
-
 
                 questionRepository.save(
                         current
                 );
 
-
                 questionRepository.save(
                         previous
                 );
 
-
                 break;
             }
         }
-
 
         return "redirect:/form/" + formId;
     }
@@ -1897,17 +1730,30 @@ public class HomeController {
      * ==========================================
      */
 
-    @GetMapping("/form/{formId}/question/{questionId}/down")
+    @GetMapping(
+            "/form/{formId}/question/{questionId}/down")
     public String moveQuestionDown(
             @PathVariable Long formId,
-            @PathVariable Long questionId) {
+            @PathVariable Long questionId,
+            Authentication authentication) {
+
+        User user =
+                getCurrentUser(authentication);
+
+        Form form =
+                formRepository.findById(formId)
+                        .orElseThrow();
+
+        checkFormOwner(
+                form,
+                user
+        );
 
         List<Question> questions =
                 questionRepository
                         .findByFormIdOrderByQuestionOrderAsc(
                                 formId
                         );
-
 
         for (int i = 0;
              i < questions.size() - 1;
@@ -1916,43 +1762,35 @@ public class HomeController {
             Question current =
                     questions.get(i);
 
-
             Question next =
                     questions.get(i + 1);
 
-
-            if (current.getId().equals(questionId)) {
+            if (current.getId()
+                    .equals(questionId)) {
 
                 int temp =
                         current.getQuestionOrder();
-
 
                 current.setQuestionOrder(
                         next.getQuestionOrder()
                 );
 
-
                 next.setQuestionOrder(
                         temp
                 );
-
 
                 questionRepository.save(
                         current
                 );
 
-
                 questionRepository.save(
                         next
                 );
-
 
                 break;
             }
         }
 
-
         return "redirect:/form/" + formId;
     }
-
 }
