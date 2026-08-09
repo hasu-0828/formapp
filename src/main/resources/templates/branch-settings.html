@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>分岐設定</title>
+
+
+    <style>
+
+        /* ========================================
+           全体
+        ======================================== */
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            font-family:
+                "Yu Mincho",
+                "Hiragino Mincho ProN",
+                "Noto Serif JP",
+                serif;
+
+            color: #403b4a;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #faf7fc 0%,
+                    #f4eef8 45%,
+                    #eee8f5 100%
+                );
+
+            min-height: 100vh;
+        }
+
+
+        /* ========================================
+           背景装飾
+        ======================================== */
+
+        body::before {
+
+            content: "蓮";
+
+            position: fixed;
+
+            right: -35px;
+            bottom: -55px;
+
+            font-size: 260px;
+
+            color: rgba(178, 145, 190, 0.07);
+
+            font-family:
+                "Yu Mincho",
+                serif;
+
+            pointer-events: none;
+
+            z-index: 0;
+        }
+
+
+        body::after {
+
+            content: "狐";
+
+            position: fixed;
+
+            left: -25px;
+            top: 80px;
+
+            font-size: 180px;
+
+            color: rgba(130, 111, 153, 0.045);
+
+            font-family:
+                "Yu Mincho",
+                serif;
+
+            pointer-events: none;
+
+            z-index: 0;
+        }
+
+
+        /* ========================================
+           メイン
+        ======================================== */
+
+        .container {
+
+            position: relative;
+
+            z-index: 1;
+
+            width: min(1000px, calc(100% - 32px));
+
+            margin: 0 auto;
+
+            padding: 55px 0 70px;
+        }
+
+
+        /* ========================================
+           ヘッダー
+        ======================================== */
+
+        .page-header {
+
+            text-align: center;
+
+            margin-bottom: 45px;
+        }
+
+
+        .page-header .ornament {
+
+            color: #a88bb2;
+
+            font-size: 20px;
+
+            letter-spacing: 8px;
+
+            margin-bottom: 12px;
+        }
+
+
+        h1 {
+
+            margin: 0;
+
+            color: #51455c;
+
+            font-size: 32px;
+
+            font-weight: normal;
+
+            letter-spacing: 0.15em;
+        }
+
+
+        .description {
+
+            margin-top: 14px;
+
+            color: #83788c;
+
+            font-size: 14px;
+
+            line-height: 1.8;
+        }
+
+
+        /* ========================================
+           セクション
+        ======================================== */
+
+        .section {
+
+            margin-bottom: 32px;
+
+            padding: 28px;
+
+            background: rgba(255, 255, 255, 0.86);
+
+            border: 1px solid rgba(177, 155, 188, 0.35);
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 8px 25px rgba(85, 67, 96, 0.08);
+
+            backdrop-filter: blur(5px);
+        }
+
+
+        .section-title {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            margin: 0 0 22px;
+
+            padding-bottom: 13px;
+
+            border-bottom: 1px solid #e5dce9;
+
+            color: #5b4b66;
+
+            font-size: 21px;
+
+            font-weight: normal;
+        }
+
+
+        .section-title::before {
+
+            content: "✦";
+
+            color: #b18abd;
+
+            font-size: 15px;
+        }
+
+
+        /* ========================================
+           質問カード
+        ======================================== */
+
+        .question-card {
+
+            margin-bottom: 20px;
+
+            padding: 22px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #ffffff,
+                    #faf7fc
+                );
+
+            border: 1px solid #e6ddea;
+
+            border-radius: 12px;
+        }
+
+
+        .question-card:last-child {
+
+            margin-bottom: 0;
+        }
+
+
+        .question-title {
+
+            margin: 0 0 18px;
+
+            color: #51445c;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            line-height: 1.7;
+        }
+
+
+        .question-number {
+
+            display: inline-block;
+
+            margin-right: 8px;
+
+            color: #a276ae;
+
+            font-size: 15px;
+        }
+
+
+        /* ========================================
+           分岐行
+        ======================================== */
+
+        .branch-row {
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(130px, 1fr)
+                35px
+                minmax(250px, 2fr);
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 13px 15px;
+
+            margin-bottom: 10px;
+
+            background: #f8f4fa;
+
+            border-radius: 9px;
+
+            border: 1px solid #eee5f1;
+        }
+
+
+        .branch-row:last-child {
+
+            margin-bottom: 0;
+        }
+
+
+        .choice-name {
+
+            color: #5d5265;
+
+            font-size: 14px;
+
+            word-break: break-word;
+        }
+
+
+        .arrow {
+
+            text-align: center;
+
+            color: #a783b0;
+
+            font-size: 18px;
+        }
+
+
+        /* ========================================
+           セレクト
+        ======================================== */
+
+        select {
+
+            width: 100%;
+
+            padding: 10px 12px;
+
+            border: 1px solid #d7c8dd;
+
+            border-radius: 8px;
+
+            background: #ffffff;
+
+            color: #51475a;
+
+            font-family:
+                "Yu Mincho",
+                "Hiragino Mincho ProN",
+                serif;
+
+            font-size: 14px;
+
+            cursor: pointer;
+
+            outline: none;
+
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s;
+        }
+
+
+        select:hover {
+
+            border-color: #b89bc1;
+        }
+
+
+        select:focus {
+
+            border-color: #9d76a9;
+
+            box-shadow:
+                0 0 0 3px rgba(157, 118, 169, 0.12);
+        }
+
+
+        /* ========================================
+           その他の質問
+        ======================================== */
+
+        .next-question-row {
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(260px, 1.2fr)
+                35px
+                minmax(250px, 1fr);
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 15px;
+
+            margin-bottom: 10px;
+
+            background: #f8f4fa;
+
+            border: 1px solid #eee5f1;
+
+            border-radius: 9px;
+        }
+
+
+        .next-question-row:last-child {
+
+            margin-bottom: 0;
+        }
+
+
+        .next-question-name {
+
+            color: #5d5265;
+
+            font-size: 14px;
+
+            line-height: 1.6;
+        }
+
+
+        .next-question-name strong {
+
+            color: #9b76a5;
+
+            margin-right: 5px;
+        }
+
+
+        /* ========================================
+           説明
+        ======================================== */
+
+        .note {
+
+            margin-top: 18px;
+
+            padding: 13px 16px;
+
+            color: #766c7c;
+
+            background: #faf7fc;
+
+            border-left: 3px solid #c0a3c8;
+
+            border-radius: 5px;
+
+            font-size: 13px;
+
+            line-height: 1.8;
+        }
+
+
+        /* ========================================
+           保存ボタン
+        ======================================== */
+
+        .action-area {
+
+            text-align: center;
+
+            margin-top: 40px;
+        }
+
+
+        .save-button {
+
+            min-width: 240px;
+
+            padding: 13px 30px;
+
+            border: none;
+
+            border-radius: 30px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #92729e,
+                    #b18aba
+                );
+
+            color: white;
+
+            font-family:
+                "Yu Mincho",
+                "Hiragino Mincho ProN",
+                serif;
+
+            font-size: 15px;
+
+            letter-spacing: 0.08em;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 6px 15px rgba(115, 82, 125, 0.2);
+
+            transition:
+                transform 0.2s,
+                box-shadow 0.2s;
+        }
+
+
+        .save-button:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 9px 20px rgba(115, 82, 125, 0.27);
+        }
+
+
+        /* ========================================
+           戻るリンク
+        ======================================== */
+
+        .back-area {
+
+            text-align: center;
+
+            margin-top: 28px;
+        }
+
+
+        .back-link {
+
+            color: #796a81;
+
+            text-decoration: none;
+
+            font-size: 14px;
+
+            border-bottom: 1px solid transparent;
+
+            transition: color 0.2s;
+        }
+
+
+        .back-link:hover {
+
+            color: #9a70a5;
+
+            border-bottom-color: #9a70a5;
+        }
+
+
+        /* ========================================
+           スマートフォン
+        ======================================== */
+
+        @media (max-width: 700px) {
+
+            .container {
+
+                width: calc(100% - 20px);
+
+                padding-top: 35px;
+            }
+
+
+            h1 {
+
+                font-size: 26px;
+            }
+
+
+            .section {
+
+                padding: 18px;
+
+                border-radius: 12px;
+            }
+
+
+            .question-card {
+
+                padding: 16px;
+            }
+
+
+            .branch-row {
+
+                grid-template-columns: 1fr;
+
+                gap: 7px;
+            }
+
+
+            .arrow {
+
+                display: none;
+            }
+
+
+            .next-question-row {
+
+                grid-template-columns: 1fr;
+
+                gap: 8px;
+            }
+
+
+            .save-button {
+
+                width: 100%;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- =====================================
+         ページタイトル
+    ====================================== -->
+
+    <header class="page-header">
+
+        <div class="ornament">
+            ◇　蓮　◇
+        </div>
+
+        <h1>
+            分岐設定
+        </h1>
+
+        <p class="description">
+
+            回答内容に応じて、次に表示する質問を設定できます。<br>
+
+            選択肢や質問ごとに進む先を指定してください。
+
+        </p>
+
+    </header>
+
+
+    <!-- =====================================
+         フォーム
+    ====================================== -->
+
+    <form method="post">
+
+
+        <!-- ==================================
+             選択肢による分岐
+        =================================== -->
+
+        <section class="section">
+
+
+            <h2 class="section-title">
+
+                選択肢による分岐
+
+            </h2>
+
+
+            <div
+                th:each="question : ${questions}">
+
+
+                <div
+                    th:if="${question.questionType == 'radio'}"
+                    class="question-card">
+
+
+                    <h3 class="question-title">
+
+                        <span
+                            class="question-number"
+                            th:text="'Q' + ${question.questionOrder}">
+
+                            Q1
+
+                        </span>
+
+
+                        <span
+                            th:text="${question.questionText}">
+
+                            質問
+
+                        </span>
+
+                    </h3>
+
+
+                    <!-- ==========================
+                         選択肢
+                    =========================== -->
+
+                    <div
+                        th:each="choice : ${questionChoices[question.id]}"
+                        class="branch-row">
+
+
+                        <span
+                            class="choice-name"
+                            th:text="${choice.choiceText}">
+
+                            選択肢
+
+                        </span>
+
+
+                        <span class="arrow">
+                            →
+                        </span>
+
+
+                        <select
+                            th:name="'choice-' + ${choice.id}">
+
+
+                            <!--
+                                フォーム終了
+                            -->
+
+                            <option value="">
+
+                                フォーム終了
+
+                            </option>
+
+
+                            <!--
+                                次の質問
+                            -->
+
+                            <option
+                                th:each="next : ${questions}"
+
+                                th:if="${next.id != question.id}"
+
+                                th:value="${next.id}"
+
+                                th:selected="${choice.nextQuestion != null and choice.nextQuestion.id == next.id}"
+
+                                th:text="'Q' + ${next.questionOrder} + '：' + ${next.questionText}">
+
+                            </option>
+
+
+                        </select>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <p class="note">
+
+                選択肢ごとに次の質問を指定できます。
+                「フォーム終了」を選択すると、その回答でフォームを終了します。
+
+            </p>
+
+
+        </section>
+
+
+        <!-- ==================================
+             質問自身の次の質問
+        =================================== -->
+
+        <section class="section">
+
+
+            <h2 class="section-title">
+
+                記述式・その他の質問
+
+            </h2>
+
+
+            <div
+                th:each="question : ${questions}">
+
+
+                <div
+                    th:if="${question.questionType != 'radio'}"
+                    class="next-question-row">
+
+
+                    <div class="next-question-name">
+
+                        <strong
+                            th:text="'Q' + ${question.questionOrder}">
+
+                            Q1
+
+                        </strong>
+
+
+                        <span
+                            th:text="${question.questionText}">
+
+                            質問
+
+                        </span>
+
+                    </div>
+
+
+                    <span class="arrow">
+                        →
+                    </span>
+
+
+                    <select
+                        th:name="'question-' + ${question.id}">
+
+
+                        <!--
+                            フォーム終了
+                        -->
+
+                        <option value="">
+
+                            フォーム終了
+
+                        </option>
+
+
+                        <!--
+                            次の質問
+                        -->
+
+                        <option
+                            th:each="next : ${questions}"
+
+                            th:if="${next.id != question.id}"
+
+                            th:value="${next.id}"
+
+                            th:selected="${question.nextQuestion != null and question.nextQuestion.id == next.id}"
+
+                            th:text="'Q' + ${next.questionOrder} + '：' + ${next.questionText}">
+
+                        </option>
+
+
+                    </select>
+
+
+                </div>
+
+
+            </div>
+
+
+            <p class="note">
+
+                記述式などの質問は、回答後に進む次の質問を指定できます。
+
+            </p>
+
+
+        </section>
+
+
+        <!-- ==================================
+             保存
+        =================================== -->
+
+        <div class="action-area">
+
+
+            <button
+                type="submit"
+                class="save-button">
+
+                ✦　分岐設定を保存　✦
+
+            </button>
+
+
+        </div>
+
+
+    </form>
+
+
+    <!-- =====================================
+         戻る
+    ====================================== -->
+
+    <div class="back-area">
+
+        <a
+            th:href="@{/form/{id}(id=${form.id})}"
+            class="back-link">
+
+            ← フォーム詳細へ戻る
+
+        </a>
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>

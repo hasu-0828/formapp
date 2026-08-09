@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>質問を編集</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        /* =====================================
+           ページ全体
+           ===================================== */
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            font-family:
+                "Yu Mincho",
+                "Hiragino Mincho ProN",
+                serif;
+
+            color: #332b32;
+
+            background:
+
+                radial-gradient(
+                    circle at 15% 20%,
+                    rgba(221, 190, 211, 0.25),
+                    transparent 30%
+                ),
+
+                radial-gradient(
+                    circle at 85% 80%,
+                    rgba(185, 205, 198, 0.25),
+                    transparent 30%
+                ),
+
+                linear-gradient(
+                    135deg,
+                    #f8f5f2,
+                    #eee8ed
+                );
+        }
+
+
+        /* =====================================
+           メイン
+           ===================================== */
+
+        .page {
+
+            width: min(900px, 92%);
+
+            margin: 0 auto;
+
+            padding:
+                50px 0 70px;
+        }
+
+
+        /* =====================================
+           ヘッダー
+           ===================================== */
+
+        .header {
+
+            text-align: center;
+
+            margin-bottom: 35px;
+        }
+
+
+        .headerMark {
+
+            font-size: 34px;
+
+            color: #9b6b8e;
+
+            margin-bottom: 8px;
+        }
+
+
+        h1 {
+
+            margin: 0;
+
+            font-size: 30px;
+
+            font-weight: normal;
+
+            letter-spacing: 0.12em;
+        }
+
+
+        .decorativeLine {
+
+            width: 80px;
+
+            height: 1px;
+
+            margin:
+                18px auto;
+
+            background:
+
+                linear-gradient(
+                    to right,
+                    transparent,
+                    #b999ac,
+                    transparent
+                );
+        }
+
+
+        .subtitle {
+
+            margin: 0;
+
+            color: #766b73;
+
+            font-size: 14px;
+        }
+
+
+        /* =====================================
+           編集カード
+           ===================================== */
+
+        .formCard {
+
+            background:
+                rgba(255, 255, 255, 0.88);
+
+            border:
+                1px solid
+                rgba(150, 125, 143, 0.25);
+
+            border-radius: 18px;
+
+            padding: 38px;
+
+            box-shadow:
+                0 12px 35px
+                rgba(65, 47, 61, 0.10);
+
+            backdrop-filter:
+                blur(5px);
+        }
+
+
+        /* =====================================
+           項目
+           ===================================== */
+
+        .field {
+
+            margin-bottom: 28px;
+        }
+
+
+        .fieldLabel {
+
+            display: block;
+
+            margin-bottom: 9px;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            color: #4b3d47;
+        }
+
+
+        .requiredMark {
+
+            color: #a45f7d;
+
+            font-size: 12px;
+
+            margin-left: 6px;
+        }
+
+
+        input[type="text"],
+        select {
+
+            width: 100%;
+
+            padding:
+                13px 15px;
+
+            border:
+                1px solid #d4c8d0;
+
+            border-radius: 9px;
+
+            background:
+                #fffdfd;
+
+            color: #332b32;
+
+            font-family: inherit;
+
+            font-size: 15px;
+
+            outline: none;
+
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s;
+        }
+
+
+        input[type="text"]:focus,
+        select:focus {
+
+            border-color:
+                #9b6b8e;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(155, 107, 142, 0.13);
+        }
+
+
+        /* =====================================
+           必須設定
+           ===================================== */
+
+        .requiredBox {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            padding:
+                10px 14px;
+
+            border-radius: 9px;
+
+            background:
+                #f7f1f5;
+
+            color:
+                #5b4b55;
+
+            cursor: pointer;
+        }
+
+
+        .requiredBox input {
+
+            width: 17px;
+
+            height: 17px;
+
+            accent-color:
+                #9b6b8e;
+        }
+
+
+        /* =====================================
+           選択肢エリア
+           ===================================== */
+
+        #choiceArea {
+
+            margin-top: 8px;
+
+            padding: 24px;
+
+            border-radius: 14px;
+
+            background:
+
+                linear-gradient(
+                    135deg,
+                    rgba(247, 241, 245, 0.95),
+                    rgba(242, 246, 244, 0.95)
+                );
+
+            border:
+                1px solid #ddd2da;
+        }
+
+
+        .choiceTitle {
+
+            margin-bottom: 16px;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            color: #51434d;
+        }
+
+
+        .choiceDescription {
+
+            margin:
+                -5px 0 18px;
+
+            font-size: 13px;
+
+            color: #81757e;
+        }
+
+
+        /* =====================================
+           選択肢
+           ===================================== */
+
+        .choiceRow {
+
+            display: flex;
+
+            gap: 10px;
+
+            margin-bottom: 12px;
+        }
+
+
+        .choiceRow input {
+
+            flex: 1;
+        }
+
+
+        /* =====================================
+           ボタン
+           ===================================== */
+
+        button {
+
+            border: none;
+
+            border-radius: 9px;
+
+            padding:
+                11px 18px;
+
+            font-family: inherit;
+
+            font-size: 14px;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.15s,
+                box-shadow 0.15s,
+                opacity 0.15s;
+        }
+
+
+        button:hover {
+
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 5px 12px
+                rgba(70, 50, 65, 0.13);
+        }
+
+
+        button:active {
+
+            transform:
+                translateY(0);
+        }
+
+
+        /* =====================================
+           削除ボタン
+           ===================================== */
+
+        .deleteButton {
+
+            background:
+                #eee5e8;
+
+            color:
+                #745765;
+
+            white-space:
+                nowrap;
+        }
+
+
+        .deleteButton:hover {
+
+            background:
+                #e8dadd;
+        }
+
+
+        /* =====================================
+           選択肢追加
+           ===================================== */
+
+        .addChoiceButton {
+
+            margin-top: 5px;
+
+            background:
+                #e6eee9;
+
+            color:
+                #4f6c5d;
+        }
+
+
+        .addChoiceButton:hover {
+
+            background:
+                #dce9e1;
+        }
+
+
+        /* =====================================
+           保存ボタン
+           ===================================== */
+
+        .saveButton {
+
+            width: 100%;
+
+            margin-top: 15px;
+
+            padding:
+                14px;
+
+            background:
+
+                linear-gradient(
+                    135deg,
+                    #9b6b8e,
+                    #80617a
+                );
+
+            color:
+                white;
+
+            font-size:
+                16px;
+
+            letter-spacing:
+                0.08em;
+        }
+
+
+        .saveButton:hover {
+
+            box-shadow:
+                0 7px 18px
+                rgba(128, 97, 122, 0.28);
+        }
+
+
+        /* =====================================
+           キャンセル
+           ===================================== */
+
+        .bottom {
+
+            text-align:
+                center;
+
+            margin-top:
+                25px;
+        }
+
+
+        .cancelLink {
+
+            color:
+                #746873;
+
+            text-decoration:
+                none;
+
+            font-size:
+                14px;
+        }
+
+
+        .cancelLink:hover {
+
+            color:
+                #9b6b8e;
+
+            text-decoration:
+                underline;
+        }
+
+
+        /* =====================================
+           スマートフォン
+           ===================================== */
+
+        @media (max-width: 600px) {
+
+            .page {
+
+                padding-top:
+                    30px;
+            }
+
+
+            .formCard {
+
+                padding:
+                    24px 18px;
+            }
+
+
+            h1 {
+
+                font-size:
+                    25px;
+            }
+
+
+            .choiceRow {
+
+                flex-direction:
+                    column;
+            }
+
+
+            .deleteButton {
+
+                width:
+                    100%;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="page">
+
+
+    <!-- =====================================
+         ヘッダー
+         ===================================== -->
+
+    <header class="header">
+
+        <div class="headerMark">
+            蓮
+        </div>
+
+
+        <h1>
+            質問を編集
+        </h1>
+
+
+        <div class="decorativeLine"></div>
+
+
+        <p class="subtitle">
+            既存の質問内容を変更します
+        </p>
+
+    </header>
+
+
+    <!-- =====================================
+         編集フォーム
+         ===================================== -->
+
+    <form
+        th:action="@{/form/{formId}/question/{questionId}/edit(
+            formId=${question.form.id},
+            questionId=${question.id}
+        )}"
+        method="post"
+        class="formCard">
+
+
+        <!-- =================================
+             質問文
+             ================================= -->
+
+        <div class="field">
+
+            <label
+                class="fieldLabel"
+                for="questionText">
+
+                質問文
+
+                <span class="requiredMark">
+                    必須
+                </span>
+
+            </label>
+
+
+            <input
+                type="text"
+                id="questionText"
+                name="questionText"
+                th:value="${question.questionText}"
+                placeholder="質問を入力してください"
+                required>
+
+        </div>
+
+
+        <!-- =================================
+             必須
+             ================================= -->
+
+        <div class="field">
+
+            <label class="requiredBox">
+
+                <input
+                    type="checkbox"
+                    name="required"
+                    th:checked="${question.required}">
+
+                <span>
+                    この質問を必須回答にする
+                </span>
+
+            </label>
+
+        </div>
+
+
+        <!-- =================================
+             質問形式
+             ================================= -->
+
+        <div class="field">
+
+            <label
+                class="fieldLabel"
+                for="questionType">
+
+                質問形式
+
+            </label>
+
+
+            <select
+                name="questionType"
+                id="questionType"
+                onchange="changeQuestionType()">
+
+
+                <option
+                    value="text"
+                    th:selected="${question.questionType == 'text'}">
+
+                    記述式
+
+                </option>
+
+
+                <option
+                    value="radio"
+                    th:selected="${question.questionType == 'radio'}">
+
+                    ラジオボタン
+
+                </option>
+
+
+                <option
+                    value="checkbox"
+                    th:selected="${question.questionType == 'checkbox'}">
+
+                    チェックボックス
+
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- =================================
+             選択肢
+             ================================= -->
+
+        <div
+            id="choiceArea">
+
+
+            <div class="choiceTitle">
+
+                選択肢
+
+            </div>
+
+
+            <p class="choiceDescription">
+
+                選択式の質問で使用する項目を設定します。
+
+            </p>
+
+
+            <div id="choices">
+
+
+                <!-- =================================
+                     保存済み選択肢
+                     ================================= -->
+
+                <div
+                    class="choiceRow"
+                    th:each="choice, stat : ${choices}">
+
+
+                    <input
+                        type="text"
+                        name="choices"
+                        th:value="${choice.choiceText}"
+                        th:placeholder="'選択肢' + ${stat.count}">
+
+
+                    <button
+                        type="button"
+                        class="deleteButton"
+                        onclick="removeChoice(this)">
+
+                        削除
+
+                    </button>
+
+                </div>
+
+
+                <!-- =================================
+                     選択肢がない場合
+                     ================================= -->
+
+                <div
+                    class="choiceRow"
+                    th:if="${choices.isEmpty()}">
+
+
+                    <input
+                        type="text"
+                        name="choices"
+                        placeholder="選択肢1">
+
+
+                    <button
+                        type="button"
+                        class="deleteButton"
+                        onclick="removeChoice(this)">
+
+                        削除
+
+                    </button>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- =================================
+                 選択肢追加
+                 ================================= -->
+
+            <button
+                type="button"
+                class="addChoiceButton"
+                onclick="addChoice()">
+
+                ＋ 選択肢を追加
+
+            </button>
+
+
+        </div>
+
+
+        <!-- =================================
+             保存
+             ================================= -->
+
+        <button
+            type="submit"
+            class="saveButton">
+
+            保存する
+
+        </button>
+
+
+    </form>
+
+
+    <!-- =====================================
+         キャンセル
+         ===================================== -->
+
+    <div class="bottom">
+
+        <a
+            href="javascript:history.back()"
+            class="cancelLink">
+
+            ← キャンセル
+
+        </a>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+    /*
+     * =====================================
+     * 質問形式変更
+     * =====================================
+     */
+
+    function changeQuestionType() {
+
+        const type =
+            document.getElementById(
+                "questionType"
+            ).value;
+
+
+        const choiceArea =
+            document.getElementById(
+                "choiceArea"
+            );
+
+
+        if (type === "radio"
+                || type === "checkbox") {
+
+            choiceArea.style.display =
+                "block";
+
+        } else {
+
+            choiceArea.style.display =
+                "none";
+        }
+    }
+
+
+    /*
+     * =====================================
+     * 選択肢追加
+     * =====================================
+     */
+
+    function addChoice() {
+
+        const choices =
+            document.getElementById(
+                "choices"
+            );
+
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+
+        row.className =
+            "choiceRow";
+
+
+        const count =
+            choices.children.length + 1;
+
+
+        row.innerHTML = `
+
+            <input
+                type="text"
+                name="choices"
+                placeholder="選択肢${count}">
+
+            <button
+                type="button"
+                class="deleteButton"
+                onclick="removeChoice(this)">
+
+                削除
+
+            </button>
+
+        `;
+
+
+        choices.appendChild(
+            row
+        );
+    }
+
+
+    /*
+     * =====================================
+     * 選択肢削除
+     * =====================================
+     */
+
+    function removeChoice(button) {
+
+        const row =
+            button.parentElement;
+
+
+        row.remove();
+
+
+        /*
+         * プレースホルダーを
+         * 1、2、3... と振り直す
+         */
+
+        const rows =
+            document.querySelectorAll(
+                "#choices .choiceRow"
+            );
+
+
+        rows.forEach(
+            function(row, index) {
+
+                const input =
+                    row.querySelector(
+                        "input"
+                    );
+
+
+                input.placeholder =
+                    "選択肢" + (index + 1);
+
+            }
+        );
+    }
+
+
+    /*
+     * =====================================
+     * 初期表示
+     * =====================================
+     *
+     * 現在の質問形式が
+     * 記述式の場合は選択肢を隠す
+     *
+     */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
+
+            changeQuestionType();
+
+        }
+    );
+
+
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>質問を追加</title>
+
+
+<style>
+
+    /* =========================================
+       基本設定
+       ========================================= */
+
+    * {
+        box-sizing: border-box;
+    }
+
+
+    html {
+        min-height: 100%;
+    }
+
+
+    body {
+
+        margin: 0;
+
+        min-height: 100vh;
+
+        font-family:
+            "Yu Mincho",
+            "Hiragino Mincho ProN",
+            "Hiragino Mincho Pro",
+            "MS PMincho",
+            serif;
+
+        color: #eee9df;
+
+        background:
+
+            /* 月明かり */
+
+            radial-gradient(
+                circle at 78% 12%,
+                rgba(224, 220, 196, 0.16) 0,
+                rgba(224, 220, 196, 0.07) 8%,
+                transparent 25%
+            ),
+
+            /* 紫の霧 */
+
+            radial-gradient(
+                ellipse at 20% 70%,
+                rgba(111, 82, 126, 0.18),
+                transparent 42%
+            ),
+
+            /* 水面 */
+
+            radial-gradient(
+                ellipse at 70% 100%,
+                rgba(66, 103, 112, 0.20),
+                transparent 45%
+            ),
+
+            linear-gradient(
+                145deg,
+                #09131c 0%,
+                #101e2a 42%,
+                #151d2b 70%,
+                #080f17 100%
+            );
+
+        overflow-x: hidden;
+
+        position: relative;
+    }
+
+
+    /* =========================================
+       背景の霧
+       ========================================= */
+
+    body::before {
+
+        content: "";
+
+        position: fixed;
+
+        left: -10%;
+        bottom: 5%;
+
+        width: 120%;
+        height: 180px;
+
+        background:
+            radial-gradient(
+                ellipse,
+                rgba(205, 212, 211, 0.06),
+                transparent 70%
+            );
+
+        filter: blur(25px);
+
+        pointer-events: none;
+    }
+
+
+    body::after {
+
+        content: "";
+
+        position: fixed;
+
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        height: 32%;
+
+        background:
+
+            repeating-linear-gradient(
+                175deg,
+                transparent 0,
+                transparent 22px,
+                rgba(157, 182, 183, 0.035) 23px,
+                transparent 24px
+            );
+
+        opacity: 0.8;
+
+        pointer-events: none;
+    }
+
+
+    /* =========================================
+       月
+       ========================================= */
+
+    .moon {
+
+        position: fixed;
+
+        top: 55px;
+        right: 9%;
+
+        width: 125px;
+        height: 125px;
+
+        border-radius: 50%;
+
+        background:
+
+            radial-gradient(
+                circle at 35% 32%,
+                #fffdf3,
+                #e8e4d5 55%,
+                #c8c6ba
+            );
+
+        opacity: 0.82;
+
+        box-shadow:
+
+            0 0 25px
+            rgba(255, 249, 220, 0.20),
+
+            0 0 80px
+            rgba(221, 217, 191, 0.08);
+
+        z-index: 0;
+
+        pointer-events: none;
+    }
+
+
+    .moon::before {
+
+        content: "";
+
+        position: absolute;
+
+        width: 18px;
+        height: 18px;
+
+        border-radius: 50%;
+
+        background: rgba(150, 148, 137, 0.10);
+
+        top: 30px;
+        left: 28px;
+
+        box-shadow:
+
+            30px 18px 0
+            rgba(150, 148, 137, 0.07),
+
+            12px 53px 0
+            rgba(150, 148, 137, 0.08),
+
+            55px 62px 0
+            rgba(150, 148, 137, 0.06);
+    }
+
+
+    /* =========================================
+       星
+       ========================================= */
+
+    .stars {
+
+        position: fixed;
+
+        inset: 0;
+
+        pointer-events: none;
+
+        z-index: 0;
+    }
+
+
+    .stars span {
+
+        position: absolute;
+
+        width: 2px;
+        height: 2px;
+
+        border-radius: 50%;
+
+        background: rgba(238, 233, 214, 0.55);
+
+        box-shadow:
+            0 0 5px
+            rgba(238, 233, 214, 0.25);
+    }
+
+
+    .star1 {
+        top: 16%;
+        left: 18%;
+    }
+
+    .star2 {
+        top: 25%;
+        left: 42%;
+    }
+
+    .star3 {
+        top: 11%;
+        left: 62%;
+    }
+
+    .star4 {
+        top: 38%;
+        left: 83%;
+    }
+
+    .star5 {
+        top: 52%;
+        left: 11%;
+    }
+
+    .star6 {
+        top: 67%;
+        left: 91%;
+    }
+
+    .star7 {
+        top: 79%;
+        left: 28%;
+    }
+
+
+    /* =========================================
+       蓮の光
+       ========================================= */
+
+    .lotus-light {
+
+        position: fixed;
+
+        bottom: 65px;
+        left: 7%;
+
+        width: 150px;
+        height: 80px;
+
+        opacity: 0.24;
+
+        z-index: 0;
+
+        pointer-events: none;
+    }
+
+
+    .lotus-light::before,
+    .lotus-light::after {
+
+        content: "";
+
+        position: absolute;
+
+        bottom: 0;
+
+        width: 75px;
+        height: 42px;
+
+        border-radius:
+            100% 0 100% 0;
+
+        border:
+            1px solid
+            rgba(211, 166, 186, 0.45);
+
+        background:
+            radial-gradient(
+                ellipse at center,
+                rgba(187, 121, 150, 0.16),
+                transparent 70%
+            );
+    }
+
+
+    .lotus-light::before {
+
+        left: 18px;
+
+        transform:
+            rotate(-25deg);
+    }
+
+
+    .lotus-light::after {
+
+        right: 18px;
+
+        transform:
+            scaleX(-1)
+            rotate(-25deg);
+    }
+
+
+    /* =========================================
+       白狐の気配
+       ========================================= */
+
+    .fox-light {
+
+        position: fixed;
+
+        right: 4%;
+
+        bottom: 8%;
+
+        width: 170px;
+        height: 130px;
+
+        opacity: 0.18;
+
+        z-index: 0;
+
+        pointer-events: none;
+    }
+
+
+    .fox-light::before {
+
+        content: "";
+
+        position: absolute;
+
+        width: 110px;
+        height: 65px;
+
+        right: 10px;
+        bottom: 20px;
+
+        border-radius:
+            70% 55% 65% 45%;
+
+        background:
+            radial-gradient(
+                ellipse,
+                rgba(245, 244, 234, 0.45),
+                rgba(221, 221, 214, 0.08) 70%,
+                transparent 75%
+            );
+
+        filter: blur(4px);
+    }
+
+
+    .fox-light::after {
+
+        content: "";
+
+        position: absolute;
+
+        width: 115px;
+        height: 45px;
+
+        right: 40px;
+        bottom: 8px;
+
+        border-radius: 50%;
+
+        border-top:
+            2px solid
+            rgba(242, 240, 225, 0.30);
+
+        transform:
+            rotate(-18deg);
+
+        filter: blur(1px);
+    }
+
+
+    /* =========================================
+       メイン
+       ========================================= */
+
+    .page {
+
+        position: relative;
+
+        z-index: 2;
+
+        width: min(820px, calc(100% - 40px));
+
+        margin: 0 auto;
+
+        padding: 65px 0 55px;
+    }
+
+
+    /* =========================================
+       ヘッダー
+       ========================================= */
+
+    .header {
+
+        text-align: center;
+
+        margin-bottom: 38px;
+    }
+
+
+    .headerMark {
+
+        color: #c99bae;
+
+        font-size: 13px;
+
+        letter-spacing: 8px;
+
+        margin-bottom: 16px;
+
+        opacity: 0.9;
+    }
+
+
+    h1 {
+
+        margin: 0;
+
+        color: #f7f3eb;
+
+        font-size: 36px;
+
+        font-weight: normal;
+
+        letter-spacing: 8px;
+
+        text-shadow:
+            0 2px 20px
+            rgba(255,255,255,0.08);
+    }
+
+
+    .decorativeLine {
+
+        width: 130px;
+
+        height: 1px;
+
+        margin: 23px auto 20px;
+
+        background:
+            linear-gradient(
+                to right,
+                transparent,
+                rgba(205, 171, 151, 0.65),
+                transparent
+            );
+    }
+
+
+    .subtitle {
+
+        margin: 0;
+
+        color: #aeb9bf;
+
+        font-size: 13px;
+
+        letter-spacing: 3px;
+    }
+
+
+    /* =========================================
+       フォームカード
+       ========================================= */
+
+    .formCard {
+
+        border:
+            1px solid
+            rgba(207, 190, 165, 0.20);
+
+        background:
+            linear-gradient(
+                135deg,
+                rgba(20, 30, 39, 0.91),
+                rgba(12, 21, 29, 0.88)
+            );
+
+        border-radius: 9px;
+
+        padding: 38px 42px;
+
+        box-shadow:
+
+            0 20px 60px
+            rgba(0,0,0,0.35),
+
+            inset 0 1px 0
+            rgba(255,255,255,0.035);
+
+        backdrop-filter:
+            blur(10px);
+    }
+
+
+    /* =========================================
+       入力項目
+       ========================================= */
+
+    .field {
+
+        margin-bottom: 30px;
+    }
+
+
+    .fieldLabel {
+
+        display: block;
+
+        margin-bottom: 10px;
+
+        color: #d7cbbd;
+
+        font-size: 15px;
+
+        letter-spacing: 2px;
+    }
+
+
+    .requiredMark {
+
+        color: #c99bae;
+
+        font-size: 10px;
+
+        margin-left: 7px;
+
+        letter-spacing: 1px;
+    }
+
+
+    input[type="text"],
+    select {
+
+        width: 100%;
+
+        padding: 14px 16px;
+
+        border:
+            1px solid
+            rgba(204, 188, 162, 0.20);
+
+        border-radius: 5px;
+
+        background:
+            rgba(8, 16, 23, 0.72);
+
+        color: #eee9df;
+
+        font-family: inherit;
+
+        font-size: 15px;
+
+        outline: none;
+
+        transition:
+            0.2s ease;
+    }
+
+
+    input[type="text"]::placeholder {
+
+        color: #6f7a80;
+    }
+
+
+    input[type="text"]:focus,
+    select:focus {
+
+        border-color:
+            rgba(203, 163, 178, 0.65);
+
+        box-shadow:
+            0 0 0 3px
+            rgba(192, 138, 161, 0.08);
+
+        background:
+            rgba(10, 19, 27, 0.88);
+    }
+
+
+    select {
+
+        cursor: pointer;
+
+        appearance: auto;
+    }
+
+
+    select option {
+
+        background: #101b25;
+
+        color: #eee9df;
+    }
+
+
+    /* =========================================
+       必須設定
+       ========================================= */
+
+    .requiredBox {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        padding: 10px 14px;
+
+        border:
+            1px solid
+            rgba(204, 188, 162, 0.12);
+
+        border-radius: 5px;
+
+        background:
+            rgba(201, 174, 145, 0.045);
+
+        color: #bfc0bb;
+
+        cursor: pointer;
+
+        font-size: 13px;
+
+        letter-spacing: 1px;
+
+        transition:
+            0.2s ease;
+    }
+
+
+    .requiredBox:hover {
+
+        background:
+            rgba(201, 174, 145, 0.08);
+
+        border-color:
+            rgba(204, 188, 162, 0.22);
+    }
+
+
+    .requiredBox input {
+
+        width: 16px;
+        height: 16px;
+
+        accent-color: #a96f89;
+    }
+
+
+    /* =========================================
+       選択肢エリア
+       ========================================= */
+
+    #choiceArea {
+
+        margin-top: 4px;
+
+        margin-bottom: 30px;
+
+        padding: 25px;
+
+        border:
+            1px solid
+            rgba(207, 190, 165, 0.15);
+
+        border-radius: 7px;
+
+        background:
+            linear-gradient(
+                135deg,
+                rgba(78, 62, 79, 0.20),
+                rgba(47, 69, 70, 0.14)
+            );
+
+        box-shadow:
+            inset 0 1px 0
+            rgba(255,255,255,0.025);
+    }
+
+
+    .choiceTitle {
+
+        margin-bottom: 17px;
+
+        color: #cbbda8;
+
+        font-size: 14px;
+
+        letter-spacing: 3px;
+    }
+
+
+    .choiceTitle::before {
+
+        content: "◇";
+
+        color: #c99bae;
+
+        margin-right: 9px;
+    }
+
+
+    .choiceRow {
+
+        display: flex;
+
+        gap: 10px;
+
+        margin-bottom: 11px;
+    }
+
+
+    .choiceRow input {
+
+        flex: 1;
+    }
+
+
+    /* =========================================
+       ボタン共通
+       ========================================= */
+
+    button {
+
+        border: none;
+
+        border-radius: 4px;
+
+        font-family: inherit;
+
+        cursor: pointer;
+
+        transition:
+            0.2s ease;
+    }
+
+
+    button:hover {
+
+        transform:
+            translateY(-1px);
+    }
+
+
+    button:active {
+
+        transform:
+            translateY(0);
+    }
+
+
+    /* =========================================
+       選択肢削除
+       ========================================= */
+
+    .deleteButton {
+
+        padding: 0 16px;
+
+        border:
+            1px solid
+            rgba(176, 105, 112, 0.28);
+
+        color: #b99499;
+
+        background:
+            rgba(93, 45, 51, 0.18);
+
+        white-space: nowrap;
+    }
+
+
+    .deleteButton:hover {
+
+        color: #e0c3c5;
+
+        border-color:
+            rgba(205, 122, 130, 0.50);
+
+        background:
+            rgba(125, 54, 62, 0.32);
+    }
+
+
+    /* =========================================
+       選択肢追加
+       ========================================= */
+
+    .addChoiceButton {
+
+        margin-top: 5px;
+
+        padding: 9px 15px;
+
+        border:
+            1px solid
+            rgba(135, 168, 139, 0.25);
+
+        color: #b8cbbb;
+
+        background:
+            rgba(79, 118, 84, 0.14);
+
+        font-size: 12px;
+
+        letter-spacing: 1px;
+    }
+
+
+    .addChoiceButton:hover {
+
+        border-color:
+            rgba(135, 168, 139, 0.45);
+
+        background:
+            rgba(79, 118, 84, 0.24);
+    }
+
+
+    /* =========================================
+       質問追加ボタン
+       ========================================= */
+
+    .submitButton {
+
+        width: 100%;
+
+        margin-top: 8px;
+
+        padding: 15px;
+
+        border:
+            1px solid
+            rgba(203, 163, 178, 0.45);
+
+        color: #f6eee9;
+
+        background:
+            linear-gradient(
+                135deg,
+                rgba(117, 71, 92, 0.82),
+                rgba(68, 54, 76, 0.88)
+            );
+
+        box-shadow:
+
+            0 8px 25px
+            rgba(0,0,0,0.25),
+
+            inset 0 1px 0
+            rgba(255,255,255,0.07);
+
+        font-size: 15px;
+
+        letter-spacing: 3px;
+    }
+
+
+    .submitButton:hover {
+
+        background:
+            linear-gradient(
+                135deg,
+                rgba(142, 88, 111, 0.92),
+                rgba(82, 64, 91, 0.96)
+            );
+
+        box-shadow:
+
+            0 12px 30px
+            rgba(0,0,0,0.32),
+
+            0 0 20px
+            rgba(192, 138, 161, 0.08);
+    }
+
+
+    /* =========================================
+       下部
+       ========================================= */
+
+    .bottom {
+
+        text-align: center;
+
+        margin-top: 28px;
+    }
+
+
+    .cancelLink {
+
+        color: #858f94;
+
+        text-decoration: none;
+
+        font-size: 12px;
+
+        letter-spacing: 2px;
+
+        transition:
+            0.2s ease;
+    }
+
+
+    .cancelLink:hover {
+
+        color: #d0a8b8;
+    }
+
+
+    /* =========================================
+       フッター
+       ========================================= */
+
+    .footer {
+
+        margin-top: 38px;
+
+        text-align: center;
+
+        color: #69767c;
+
+        font-size: 10px;
+
+        letter-spacing: 3px;
+    }
+
+
+    /* =========================================
+       スマートフォン
+       ========================================= */
+
+    @media (max-width: 650px) {
+
+        .page {
+
+            width:
+                calc(100% - 24px);
+
+            padding-top: 40px;
+        }
+
+
+        .moon {
+
+            width: 85px;
+            height: 85px;
+
+            top: 30px;
+            right: 5%;
+
+            opacity: 0.6;
+        }
+
+
+        h1 {
+
+            font-size: 27px;
+
+            letter-spacing: 5px;
+        }
+
+
+        .subtitle {
+
+            font-size: 10px;
+
+            letter-spacing: 2px;
+        }
+
+
+        .formCard {
+
+            padding: 27px 19px;
+        }
+
+
+        .choiceRow {
+
+            flex-direction: column;
+
+            gap: 8px;
+        }
+
+
+        .deleteButton {
+
+            width: 100%;
+
+            padding: 9px;
+        }
+
+
+        .fox-light {
+
+            right: -30px;
+
+            bottom: 5%;
+
+            opacity: 0.12;
+        }
+
+
+        .lotus-light {
+
+            left: -25px;
+
+            opacity: 0.16;
+        }
+    }
+
+</style>
+
+
+</head>
+
+<body>
+
+<!-- =========================================
+     背景装飾
+     ========================================= -->
+
+<div class="moon"></div>
+
+<div class="stars">
+
+
+<span class="star1"></span>
+<span class="star2"></span>
+<span class="star3"></span>
+<span class="star4"></span>
+<span class="star5"></span>
+<span class="star6"></span>
+<span class="star7"></span>
+
+
+</div>
+
+<div class="lotus-light"></div>
+
+<div class="fox-light"></div>
+
+<!-- =========================================
+     メイン
+     ========================================= -->
+
+<main class="page">
+
+
+<!-- =====================================
+     ヘッダー
+     ===================================== -->
+
+<header class="header">
+
+    <div class="headerMark">
+
+        ─　蓮　─
+
+    </div>
+
+
+    <h1>
+
+        質問を追加
+
+    </h1>
+
+
+    <div class="decorativeLine"></div>
+
+
+    <p class="subtitle">
+
+        フォームに新しい問いを加えます
+
+    </p>
+
+</header>
+
+
+
+<!-- =====================================
+     入力フォーム
+     ===================================== -->
+
+<form
+
+    th:action="@{/form/{id}/question(id=${formId})}"
+
+    method="post"
+
+    class="formCard">
+
+
+    <!-- =================================
+         質問文
+         ================================= -->
+
+    <div class="field">
+
+
+        <label
+
+            class="fieldLabel"
+
+            for="questionText">
+
+            質問文
+
+            <span class="requiredMark">
+
+                必須
+
+            </span>
+
+        </label>
+
+
+        <input
+
+            type="text"
+
+            id="questionText"
+
+            name="questionText"
+
+            placeholder="質問を入力してください"
+
+            required>
+
+    </div>
+
+
+
+    <!-- =================================
+         必須設定
+         ================================= -->
+
+    <div class="field">
+
+
+        <label class="requiredBox">
+
+
+            <input
+
+                type="checkbox"
+
+                name="required">
+
+
+            <span>
+
+                この質問を必須回答にする
+
+            </span>
+
+
+        </label>
+
+    </div>
+
+
+
+    <!-- =================================
+         質問形式
+         ================================= -->
+
+    <div class="field">
+
+
+        <label
+
+            class="fieldLabel"
+
+            for="questionType">
+
+            質問形式
+
+        </label>
+
+
+        <select
+
+            name="questionType"
+
+            id="questionType"
+
+            onchange="changeQuestionType()">
+
+
+            <option value="text">
+
+                記述式
+
+            </option>
+
+
+            <option value="radio">
+
+                ラジオボタン
+
+            </option>
+
+
+            <option value="checkbox">
+
+                チェックボックス
+
+            </option>
+
+
+        </select>
+
+    </div>
+
+
+
+    <!-- =================================
+         選択肢
+         ================================= -->
+
+    <div
+
+        id="choiceArea"
+
+        style="display: none;">
+
+
+        <div class="choiceTitle">
+
+            選択肢
+
+        </div>
+
+
+        <div id="choices">
+
+
+            <!-- 選択肢1 -->
+
+            <div class="choiceRow">
+
+
+                <input
+
+                    type="text"
+
+                    name="choices"
+
+                    placeholder="選択肢1">
+
+
+                <button
+
+                    type="button"
+
+                    class="deleteButton"
+
+                    onclick="removeChoice(this)">
+
+                    削除
+
+                </button>
+
+
+            </div>
+
+
+
+            <!-- 選択肢2 -->
+
+            <div class="choiceRow">
+
+
+                <input
+
+                    type="text"
+
+                    name="choices"
+
+                    placeholder="選択肢2">
+
+
+                <button
+
+                    type="button"
+
+                    class="deleteButton"
+
+                    onclick="removeChoice(this)">
+
+                    削除
+
+                </button>
+
+
+            </div>
+
+
+
+            <!-- 選択肢3 -->
+
+            <div class="choiceRow">
+
+
+                <input
+
+                    type="text"
+
+                    name="choices"
+
+                    placeholder="選択肢3">
+
+
+                <button
+
+                    type="button"
+
+                    class="deleteButton"
+
+                    onclick="removeChoice(this)">
+
+                    削除
+
+                </button>
+
+
+            </div>
+
+        </div>
+
+
+
+        <button
+
+            type="button"
+
+            class="addChoiceButton"
+
+            onclick="addChoice()">
+
+            ＋ 選択肢を追加
+
+        </button>
+
+    </div>
+
+
+
+    <!-- =================================
+         質問追加
+         ================================= -->
+
+    <button
+
+        type="submit"
+
+        class="submitButton">
+
+        質問を追加
+
+    </button>
+
+
+</form>
+
+
+
+<!-- =====================================
+     キャンセル
+     ===================================== -->
+
+<div class="bottom">
+
+
+    <a
+
+        href="javascript:history.back()"
+
+        class="cancelLink">
+
+        ← フォーム管理へ戻る
+
+    </a>
+
+
+</div>
+
+
+
+<!-- =====================================
+     フッター
+     ===================================== -->
+
+<footer class="footer">
+
+    ❖　静寂の中に、ひとつの問いを　❖
+
+</footer>
+
+</main>
+
+<!-- =========================================
+     JavaScript
+     ========================================= -->
+
+<script>
+
+
+    /*
+     * =====================================
+     * 質問形式変更
+     * =====================================
+     */
+
+    function changeQuestionType() {
+
+
+        const type =
+            document.getElementById(
+                "questionType"
+            ).value;
+
+
+        const choiceArea =
+            document.getElementById(
+                "choiceArea"
+            );
+
+
+        if (
+            type === "radio"
+            ||
+            type === "checkbox"
+        ) {
+
+            choiceArea.style.display =
+                "block";
+
+        } else {
+
+            choiceArea.style.display =
+                "none";
+        }
+    }
+
+
+
+    /*
+     * =====================================
+     * 選択肢追加
+     * =====================================
+     */
+
+    function addChoice() {
+
+
+        const choices =
+            document.getElementById(
+                "choices"
+            );
+
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+
+        row.className =
+            "choiceRow";
+
+
+        const count =
+            choices.children.length + 1;
+
+
+        row.innerHTML = `
+
+            <input
+                type="text"
+                name="choices"
+                placeholder="選択肢${count}">
+
+            <button
+                type="button"
+                class="deleteButton"
+                onclick="removeChoice(this)">
+
+                削除
+
+            </button>
+
+        `;
+
+
+        choices.appendChild(row);
+    }
+
+
+
+    /*
+     * =====================================
+     * 選択肢削除
+     * =====================================
+     */
+
+    function removeChoice(button) {
+
+
+        const row =
+            button.parentElement;
+
+
+        row.remove();
+
+
+        /*
+         * プレースホルダーを
+         * 選択肢1、2、3... と振り直す
+         */
+
+        const rows =
+            document.querySelectorAll(
+                "#choices .choiceRow"
+            );
+
+
+        rows.forEach(
+            function(row, index) {
+
+
+                const input =
+                    row.querySelector(
+                        "input"
+                    );
+
+
+                input.placeholder =
+                    "選択肢"
+                    +
+                    (index + 1);
+
+            }
+        );
+    }
+
+
+</script>
+
+</body>
+
+</html>

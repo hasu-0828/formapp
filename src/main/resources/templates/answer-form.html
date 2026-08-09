@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title th:text="${form.title}">
+    フォーム
+</title>
+
+
+<style>
+
+/* ==========================================
+   全体
+   ========================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+
+    margin: 0;
+
+    min-height: 100vh;
+
+    font-family:
+        "Yu Mincho",
+        "Hiragino Mincho ProN",
+        "Noto Serif JP",
+        serif;
+
+    color: #eeeaf4;
+
+    background:
+
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(91, 73, 128, 0.30),
+            transparent 38%
+        ),
+
+        radial-gradient(
+            circle at 15% 80%,
+            rgba(40, 91, 87, 0.20),
+            transparent 35%
+        ),
+
+        linear-gradient(
+            135deg,
+            #090b16 0%,
+            #111426 45%,
+            #0a1018 100%
+        );
+
+    overflow-x: hidden;
+}
+
+
+/* ==========================================
+   背景の月明かり
+   ========================================== */
+
+body::before {
+
+    content: "";
+
+    position: fixed;
+
+    width: 460px;
+    height: 460px;
+
+    top: -210px;
+    right: -120px;
+
+    border-radius: 50%;
+
+    background:
+
+        radial-gradient(
+            circle,
+            rgba(205, 197, 230, 0.14),
+            rgba(185, 177, 220, 0.05) 35%,
+            transparent 70%
+        );
+
+    filter: blur(10px);
+
+    pointer-events: none;
+
+    z-index: 0;
+}
+
+
+/* ==========================================
+   メイン
+   ========================================== */
+
+.answerContainer {
+
+    position: relative;
+
+    width: min(760px, calc(100% - 32px));
+
+    margin: 60px auto;
+
+    padding: 45px 50px 55px;
+
+    background:
+
+        linear-gradient(
+            145deg,
+            rgba(23, 27, 45, 0.97),
+            rgba(13, 18, 31, 0.98)
+        );
+
+    border:
+        1px solid rgba(183, 168, 218, 0.20);
+
+    border-radius: 18px;
+
+    box-shadow:
+
+        0 25px 80px rgba(0, 0, 0, 0.65),
+
+        0 0 50px rgba(93, 74, 128, 0.10);
+
+    z-index: 1;
+}
+
+
+/* ==========================================
+   フォームタイトル
+   ========================================== */
+
+.formHeader {
+
+    text-align: center;
+
+    margin-bottom: 45px;
+
+    padding-bottom: 30px;
+
+    border-bottom:
+        1px solid rgba(190, 178, 216, 0.16);
+}
+
+
+.formHeader h1 {
+
+    margin: 0;
+
+    font-size: 32px;
+
+    font-weight: normal;
+
+    letter-spacing: 0.16em;
+
+    color: #f1edf8;
+
+    text-shadow:
+        0 0 18px rgba(195, 180, 225, 0.25);
+}
+
+
+.formDecoration {
+
+    margin-top: 16px;
+
+    font-size: 13px;
+
+    letter-spacing: 0.22em;
+
+    color: #a99fc1;
+
+    opacity: 0.8;
+}
+
+
+/* ==========================================
+   質問
+   ========================================== */
+
+.question {
+
+    display: none;
+
+    animation:
+        questionFade 0.55s ease;
+}
+
+
+.question.active {
+
+    display: block;
+}
+
+
+@keyframes questionFade {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(12px);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0);
+
+    }
+
+}
+
+
+/* ==========================================
+   質問文
+   ========================================== */
+
+.question h3 {
+
+    margin: 0 0 30px;
+
+    padding-left: 18px;
+
+    border-left:
+        2px solid rgba(177, 157, 207, 0.65);
+
+    font-size: 20px;
+
+    font-weight: normal;
+
+    line-height: 1.8;
+
+    letter-spacing: 0.08em;
+
+    color: #eeeaf4;
+}
+
+
+/* ==========================================
+   必須
+   ========================================== */
+
+.requiredMark {
+
+    margin-left: 10px;
+
+    font-size: 12px;
+
+    color: #c78f9f;
+
+    letter-spacing: 0.05em;
+}
+
+
+/* ==========================================
+   記述式
+   ========================================== */
+
+.answerInput[type="text"] {
+
+    width: 100%;
+
+    padding: 15px 18px;
+
+    font-family:
+        "Yu Mincho",
+        "Hiragino Mincho ProN",
+        serif;
+
+    font-size: 15px;
+
+    color: #eeeaf4;
+
+    background:
+        rgba(5, 8, 17, 0.65);
+
+    border:
+        1px solid rgba(178, 165, 207, 0.25);
+
+    border-radius: 8px;
+
+    outline: none;
+
+    transition:
+
+        border-color 0.3s,
+
+        box-shadow 0.3s,
+
+        background 0.3s;
+}
+
+
+.answerInput[type="text"]::placeholder {
+
+    color: #777489;
+}
+
+
+.answerInput[type="text"]:focus {
+
+    border-color:
+        rgba(190, 170, 220, 0.65);
+
+    background:
+        rgba(9, 12, 23, 0.85);
+
+    box-shadow:
+        0 0 18px rgba(151, 126, 188, 0.14);
+}
+
+
+/* ==========================================
+   選択肢
+   ========================================== */
+
+.choiceLabel {
+
+    display: block;
+
+    margin: 12px 0;
+
+    padding: 15px 18px;
+
+    cursor: pointer;
+
+    background:
+        rgba(7, 10, 20, 0.48);
+
+    border:
+        1px solid rgba(169, 157, 193, 0.16);
+
+    border-radius: 9px;
+
+    transition:
+
+        background 0.25s,
+
+        border-color 0.25s,
+
+        transform 0.25s;
+}
+
+
+.choiceLabel:hover {
+
+    background:
+        rgba(72, 64, 96, 0.30);
+
+    border-color:
+        rgba(177, 159, 207, 0.38);
+
+    transform:
+        translateX(3px);
+}
+
+
+.choiceLabel input {
+
+    margin-right: 10px;
+
+    accent-color: #9e8dbd;
+}
+
+
+.choiceLabel span {
+
+    color: #ded9e7;
+
+    letter-spacing: 0.05em;
+}
+
+
+/* ==========================================
+   質問ボタン
+   ========================================== */
+
+.questionButtons {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-top: 42px;
+}
+
+
+.questionButtons button {
+
+    padding: 12px 25px;
+
+    font-family:
+        "Yu Mincho",
+        "Hiragino Mincho ProN",
+        serif;
+
+    font-size: 14px;
+
+    letter-spacing: 0.12em;
+
+    color: #eeeaf4;
+
+    background:
+        rgba(45, 43, 65, 0.75);
+
+    border:
+        1px solid rgba(178, 164, 207, 0.28);
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    transition:
+
+        background 0.25s,
+
+        border-color 0.25s,
+
+        box-shadow 0.25s,
+
+        transform 0.25s;
+}
+
+
+.questionButtons button:hover {
+
+    background:
+        rgba(91, 76, 116, 0.65);
+
+    border-color:
+        rgba(200, 184, 222, 0.55);
+
+    box-shadow:
+        0 0 20px rgba(144, 119, 178, 0.18);
+
+    transform:
+        translateY(-2px);
+}
+
+
+/* ==========================================
+   確認画面
+   ========================================== */
+
+#confirmationArea {
+
+    display: none;
+
+    animation:
+        questionFade 0.6s ease;
+}
+
+
+/* ==========================================
+   確認画面タイトル
+   ========================================== */
+
+.confirmationTitle {
+
+    margin: 0;
+
+    text-align: center;
+
+    font-size: 25px;
+
+    font-weight: normal;
+
+    letter-spacing: 0.12em;
+
+    color: #f0ebf6;
+
+    text-shadow:
+        0 0 18px rgba(190, 175, 220, 0.20);
+}
+
+
+.confirmationDecoration {
+
+    margin-top: 14px;
+
+    margin-bottom: 25px;
+
+    text-align: center;
+
+    font-size: 12px;
+
+    letter-spacing: 0.18em;
+
+    color: #a99fc1;
+}
+
+
+.confirmationMessage {
+
+    margin-bottom: 30px;
+
+    text-align: center;
+
+    font-size: 14px;
+
+    line-height: 2;
+
+    color: #bbb5c7;
+}
+
+
+/* ==========================================
+   回答一覧
+   ========================================== */
+
+.answerTable {
+
+    width: 100%;
+
+    border-collapse: separate;
+
+    border-spacing: 0 12px;
+
+    table-layout: fixed;
+}
+
+
+/* ==========================================
+   質問列
+   ========================================== */
+
+.answerTable th {
+
+    width: 42%;
+
+    padding: 18px 20px;
+
+    text-align: left;
+
+    vertical-align: top;
+
+    font-size: 14px;
+
+    font-weight: normal;
+
+    line-height: 1.7;
+
+    letter-spacing: 0.05em;
+
+    color: #d7d0e3;
+
+    background:
+        rgba(49, 45, 67, 0.75);
+
+    border:
+        1px solid rgba(175, 158, 202, 0.18);
+
+    border-right: none;
+
+    border-radius: 9px 0 0 9px;
+}
+
+
+/* ==========================================
+   回答列
+   ========================================== */
+
+.answerTable td {
+
+    padding: 18px 20px;
+
+    vertical-align: top;
+
+    font-size: 14px;
+
+    line-height: 1.8;
+
+    color: #eeeaf4;
+
+    background:
+        rgba(8, 11, 21, 0.72);
+
+    border:
+        1px solid rgba(175, 158, 202, 0.18);
+
+    border-left: none;
+
+    border-radius: 0 9px 9px 0;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+}
+
+
+/* ==========================================
+   質問番号
+   ========================================== */
+
+.answerQuestionNumber {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-size: 11px;
+
+    color: #9f92b7;
+
+    letter-spacing: 0.12em;
+}
+
+
+/* ==========================================
+   回答なし
+   ========================================== */
+
+.noAnswer {
+
+    color: #777489;
+
+    font-style: italic;
+}
+
+
+/* ==========================================
+   確認画面ボタン
+   ========================================== */
+
+.confirmationButtons {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 18px;
+
+    margin-top: 38px;
+}
+
+
+.confirmationButtons button {
+
+    min-width: 170px;
+
+    padding: 14px 25px;
+
+    font-family:
+        "Yu Mincho",
+        "Hiragino Mincho ProN",
+        serif;
+
+    font-size: 14px;
+
+    letter-spacing: 0.12em;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition:
+
+        background 0.25s,
+
+        border-color 0.25s,
+
+        box-shadow 0.25s,
+
+        transform 0.25s;
+}
+
+
+/* ==========================================
+   戻って修正
+   ========================================== */
+
+.editButton {
+
+    color: #d8d1e3;
+
+    background:
+        rgba(42, 40, 58, 0.8);
+
+    border:
+        1px solid rgba(178, 164, 207, 0.30);
+}
+
+
+.editButton:hover {
+
+    background:
+        rgba(70, 64, 88, 0.8);
+
+    border-color:
+        rgba(198, 183, 220, 0.50);
+
+    transform:
+        translateY(-2px);
+}
+
+
+/* ==========================================
+   送信ボタン
+   ========================================== */
+
+.submitButton {
+
+    color: #f5f0fa;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(103, 81, 130, 0.90),
+            rgba(72, 67, 107, 0.90)
+        );
+
+    border:
+        1px solid rgba(205, 187, 225, 0.38);
+
+    box-shadow:
+        0 5px 25px rgba(65, 48, 91, 0.25);
+}
+
+
+.submitButton:hover {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124, 97, 153, 0.95),
+            rgba(87, 80, 127, 0.95)
+        );
+
+    border-color:
+        rgba(220, 204, 237, 0.60);
+
+    box-shadow:
+        0 8px 30px rgba(89, 65, 119, 0.35);
+
+    transform:
+        translateY(-2px);
+}
+
+
+/* ==========================================
+   白狐のメッセージ
+   ========================================== */
+
+.confirmationFox {
+
+    margin-top: 28px;
+
+    text-align: center;
+
+    font-size: 11px;
+
+    letter-spacing: 0.16em;
+
+    color: #81798e;
+
+    opacity: 0.8;
+}
+
+
+/* ==========================================
+   スマートフォン
+   ========================================== */
+
+@media (max-width: 600px) {
+
+    .answerContainer {
+
+        width:
+            calc(100% - 20px);
+
+        margin:
+            20px auto;
+
+        padding:
+            30px 22px 35px;
+
+        border-radius:
+            14px;
+    }
+
+
+    .formHeader h1 {
+
+        font-size: 24px;
+    }
+
+
+    .formDecoration {
+
+        font-size: 11px;
+    }
+
+
+    .question h3 {
+
+        font-size: 17px;
+
+        padding-left:
+            12px;
+    }
+
+
+    .questionButtons button {
+
+        padding:
+            11px 18px;
+    }
+
+
+    /* --------------------------------------
+       確認画面をスマホでは縦並びにする
+       -------------------------------------- */
+
+    .answerTable {
+
+        border-spacing:
+            0 16px;
+    }
+
+
+    .answerTable,
+    .answerTable tbody,
+    .answerTable tr,
+    .answerTable th,
+    .answerTable td {
+
+        display: block;
+
+        width: 100%;
+    }
+
+
+    .answerTable tr {
+
+        margin-bottom: 18px;
+    }
+
+
+    .answerTable th {
+
+        padding:
+            13px 15px;
+
+        border:
+            1px solid rgba(175, 158, 202, 0.18);
+
+        border-bottom:
+            none;
+
+        border-radius:
+            8px 8px 0 0;
+    }
+
+
+    .answerTable td {
+
+        padding:
+            15px;
+
+        border:
+            1px solid rgba(175, 158, 202, 0.18);
+
+        border-top:
+            none;
+
+        border-radius:
+            0 0 8px 8px;
+    }
+
+
+    .confirmationButtons {
+
+        flex-direction:
+            column;
+
+        gap: 12px;
+    }
+
+
+    .confirmationButtons button {
+
+        width: 100%;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="answerContainer">
+
+
+    <!--
+        ==========================================
+        フォームタイトル
+        ==========================================
+    -->
+
+    <div class="formHeader">
+
+        <h1 th:text="${form.title}">
+
+            フォーム
+
+        </h1>
+
+
+        <div class="formDecoration">
+
+            ― 蓮の水面に、問いを浮かべて ―
+
+        </div>
+
+    </div>
+
+
+    <!--
+        ==========================================
+        回答フォーム
+        ==========================================
+    -->
+
+    <form
+
+        id="answerForm"
+
+        th:action="@{/answer/{id}(id=${form.id})}"
+
+        method="post">
+
+
+        <!--
+            ==========================================
+            質問一覧
+            ==========================================
+        -->
+
+        <div
+
+            th:each="question : ${questions}"
+
+            class="question"
+
+            th:id="'question-' + ${question.id}"
+
+            th:attr="
+                data-question-id=${question.id},
+                data-required=${question.required},
+                data-next-question=${question.nextQuestion != null ? question.nextQuestion.id : ''}
+            ">
+
+
+            <!--
+                ======================================
+                質問文
+                ======================================
+            -->
+
+            <h3>
+
+                <span
+
+                    th:text="
+                        'Q' +
+                        ${question.questionOrder} +
+                        '　' +
+                        ${question.questionText}
+                    ">
+
+                    Q1　質問
+
+                </span>
+
+
+                <span
+
+                    th:if="${question.required}"
+
+                    class="requiredMark">
+
+                    ※必須
+
+                </span>
+
+            </h3>
+
+
+            <!--
+                ======================================
+                記述式
+                ======================================
+            -->
+
+            <div
+
+                th:if="${question.questionType == 'text'}">
+
+
+                <input
+
+                    type="text"
+
+                    th:name="'question-' + ${question.id}"
+
+                    class="answerInput"
+
+                    placeholder="回答を入力してください">
+
+            </div>
+
+
+            <!--
+                ======================================
+                ラジオボタン
+                ======================================
+            -->
+
+            <div
+
+                th:if="${question.questionType == 'radio'}">
+
+
+                <div
+
+                    th:each="choice : ${questionChoices[question.id]}">
+
+
+                    <label class="choiceLabel">
+
+
+                        <input
+
+                            type="radio"
+
+                            th:name="'question-' + ${question.id}"
+
+                            th:value="${choice.choiceText}"
+
+                            class="answerInput"
+
+                            th:attr="
+                                data-next-question=${choice.nextQuestion != null ? choice.nextQuestion.id : ''}
+                            ">
+
+
+                        <span
+
+                            th:text="${choice.choiceText}">
+
+                            選択肢
+
+                        </span>
+
+
+                    </label>
+
+
+                </div>
+
+            </div>
+
+
+            <!--
+                ======================================
+                チェックボックス
+                ======================================
+            -->
+
+            <div
+
+                th:if="${question.questionType == 'checkbox'}">
+
+
+                <div
+
+                    th:each="choice : ${questionChoices[question.id]}">
+
+
+                    <label class="choiceLabel">
+
+
+                        <input
+
+                            type="checkbox"
+
+                            th:name="'question-' + ${question.id}"
+
+                            th:value="${choice.choiceText}"
+
+                            class="answerInput">
+
+
+                        <span
+
+                            th:text="${choice.choiceText}">
+
+                            選択肢
+
+                        </span>
+
+
+                    </label>
+
+
+                </div>
+
+            </div>
+
+
+            <!--
+                ==========================================
+                戻る・次へ
+                ==========================================
+            -->
+
+            <div class="questionButtons">
+
+
+                <button
+
+                    type="button"
+
+                    class="backButton"
+
+                    onclick="goBack()">
+
+                    ← 戻る
+
+                </button>
+
+
+                <button
+
+                    type="button"
+
+                    class="nextButton"
+
+                    onclick="goNext()">
+
+                    次へ →
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!--
+            ==========================================
+            回答確認画面
+            ==========================================
+        -->
+
+        <div id="confirmationArea">
+
+
+            <h2 class="confirmationTitle">
+
+                回答を確認してください
+
+            </h2>
+
+
+            <div class="confirmationDecoration">
+
+                ― 白狐が、あなたの答えを見届けます ―
+
+            </div>
+
+
+            <p class="confirmationMessage">
+
+                以下の内容で回答を送信します。<br>
+
+                内容を確認して、問題がなければ送信してください。
+
+            </p>
+
+
+            <!--
+                ======================================
+                回答一覧
+                ======================================
+            -->
+
+            <table class="answerTable">
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            質問
+                        </th>
+
+                        <th>
+                            回答
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="confirmationAnswers">
+
+                </tbody>
+
+
+            </table>
+
+
+            <!--
+                ======================================
+                確認ボタン
+                ======================================
+            -->
+
+            <div class="confirmationButtons">
+
+
+                <button
+
+                    type="button"
+
+                    class="editButton"
+
+                    onclick="returnToLastQuestion()">
+
+                    ← 戻って修正
+
+                </button>
+
+
+                <button
+
+                    type="button"
+
+                    class="submitButton"
+
+                    onclick="submitForm()">
+
+                    この内容で送信
+
+                </button>
+
+
+            </div>
+
+
+            <div class="confirmationFox">
+
+                白狐の導きに従い、最後の確認を。
+
+            </div>
+
+
+        </div>
+
+
+    </form>
+
+</div>
+
+
+<script>
+
+
+/*
+ * ==========================================
+ * 現在表示している質問
+ * ==========================================
+ */
+
+let currentQuestion = null;
+
+
+/*
+ * ==========================================
+ * 回答した質問の履歴
+ *
+ * 分岐で実際に通った質問だけを保存する
+ * ==========================================
+ */
+
+let questionHistory = [];
+
+
+/*
+ * ==========================================
+ * ページ読み込み時
+ * ==========================================
+ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+
+        const firstQuestion =
+            document.querySelector(".question");
+
+
+        /*
+         * 質問が存在しない場合
+         */
+
+        if (!firstQuestion) {
+
+            showConfirmationArea();
+
+            return;
+        }
+
+
+        /*
+         * 最初の質問を表示
+         */
+
+        showQuestion(
+            firstQuestion
+        );
+
+    }
+);
+
+
+/*
+ * ==========================================
+ * 質問を表示
+ * ==========================================
+ */
+
+function showQuestion(question) {
+
+
+    /*
+     * 確認画面を非表示
+     */
+
+    document.getElementById(
+        "confirmationArea"
+    ).style.display = "none";
+
+
+    /*
+     * すべての質問を非表示
+     */
+
+    const questions =
+        document.querySelectorAll(
+            ".question"
+        );
+
+
+    questions.forEach(
+        function (item) {
+
+            item.classList.remove(
+                "active"
+            );
+
+        }
+    );
+
+
+    /*
+     * 指定された質問を表示
+     */
+
+    question.classList.add(
+        "active"
+    );
+
+
+    currentQuestion =
+        question;
+
+
+    /*
+     * ページ上部へ移動
+     */
+
+    window.scrollTo({
+
+        top: 0,
+
+        behavior: "smooth"
+
+    });
+
+
+    /*
+     * 戻るボタン
+     */
+
+    const backButton =
+        question.querySelector(
+            ".backButton"
+        );
+
+
+    if (backButton) {
+
+
+        if (questionHistory.length === 0) {
+
+            backButton.style.visibility =
+                "hidden";
+
+        } else {
+
+            backButton.style.visibility =
+                "visible";
+
+        }
+
+    }
+
+}
+
+
+/*
+ * ==========================================
+ * 回答を取得
+ * ==========================================
+ */
+
+function getAnswer(question) {
+
+
+    const inputs =
+        question.querySelectorAll(
+            ".answerInput"
+        );
+
+
+    /*
+     * 記述式
+     */
+
+    if (
+
+        inputs.length > 0
+
+        &&
+
+        inputs[0].type === "text"
+
+    ) {
+
+        return inputs[0].value.trim();
+
+    }
+
+
+    /*
+     * ラジオボタン
+     */
+
+    if (
+
+        inputs.length > 0
+
+        &&
+
+        inputs[0].type === "radio"
+
+    ) {
+
+
+        for (
+            const input of inputs
+        ) {
+
+
+            if (input.checked) {
+
+                return input.value;
+
+            }
+
+        }
+
+
+        return "";
+
+    }
+
+
+    /*
+     * チェックボックス
+     */
+
+    const checkedValues = [];
+
+
+    for (
+        const input of inputs
+    ) {
+
+
+        if (input.checked) {
+
+            checkedValues.push(
+                input.value
+            );
+
+        }
+
+    }
+
+
+    return checkedValues.join(
+        "、"
+    );
+
+}
+
+
+/*
+ * ==========================================
+ * 必須チェック
+ * ==========================================
+ */
+
+function validateQuestion(question) {
+
+
+    const required =
+        question.dataset.required === "true";
+
+
+    if (!required) {
+
+        return true;
+
+    }
+
+
+    const answer =
+        getAnswer(question);
+
+
+    if (answer !== "") {
+
+        return true;
+
+    }
+
+
+    alert(
+        "この質問は必須です。回答してください。"
+    );
+
+
+    return false;
+
+}
+
+
+/*
+ * ==========================================
+ * 次へ
+ * ==========================================
+ */
+
+function goNext() {
+
+
+    if (!currentQuestion) {
+
+        return;
+
+    }
+
+
+    /*
+     * 必須チェック
+     */
+
+    if (
+        !validateQuestion(
+            currentQuestion
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * 現在の質問を履歴へ追加
+     *
+     * 重複を防ぐ
+     */
+
+    if (
+        questionHistory.length === 0
+
+        ||
+
+        questionHistory[
+            questionHistory.length - 1
+        ] !== currentQuestion.id
+    ) {
+
+        questionHistory.push(
+            currentQuestion.id
+        );
+
+    }
+
+
+    /*
+     * 次の質問ID
+     */
+
+    let nextQuestionId = "";
+
+
+    /*
+     * ======================================
+     * ラジオボタンの分岐
+     * ======================================
+     */
+
+    const radioInputs =
+        currentQuestion.querySelectorAll(
+            'input[type="radio"]'
+        );
+
+
+    if (radioInputs.length > 0) {
+
+
+        for (
+            const input of radioInputs
+        ) {
+
+
+            if (input.checked) {
+
+                nextQuestionId =
+                    input.dataset.nextQuestion || "";
+
+                break;
+
+            }
+
+        }
+
+    }
+
+
+    /*
+     * ======================================
+     * 質問自身の分岐
+     * ======================================
+     */
+
+    if (nextQuestionId === "") {
+
+        nextQuestionId =
+            currentQuestion.dataset.nextQuestion || "";
+
+    }
+
+
+    /*
+     * ======================================
+     * 次の質問がない
+     * ======================================
+     */
+
+    if (nextQuestionId === "") {
+
+        showConfirmationArea();
+
+        return;
+
+    }
+
+
+    /*
+     * ======================================
+     * 次の質問を取得
+     * ======================================
+     */
+
+    const nextQuestion =
+        document.getElementById(
+            "question-" + nextQuestionId
+        );
+
+
+    /*
+     * 質問が存在しない
+     */
+
+    if (!nextQuestion) {
+
+        showConfirmationArea();
+
+        return;
+
+    }
+
+
+    /*
+     * 次の質問を表示
+     */
+
+    showQuestion(
+        nextQuestion
+    );
+
+}
+
+
+/*
+ * ==========================================
+ * 戻る
+ * ==========================================
+ */
+
+function goBack() {
+
+
+    /*
+     * 戻る履歴がない
+     */
+
+    if (
+        questionHistory.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * 現在の質問を履歴から削除
+     */
+
+    questionHistory.pop();
+
+
+    /*
+     * さらに前の質問がない場合
+     */
+
+    if (
+        questionHistory.length === 0
+    ) {
+
+
+        const firstQuestion =
+            document.querySelector(
+                ".question"
+            );
+
+
+        if (firstQuestion) {
+
+            showQuestion(
+                firstQuestion
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    /*
+     * 前の質問ID
+     */
+
+    const previousQuestionId =
+        questionHistory[
+            questionHistory.length - 1
+        ];
+
+
+    const previousQuestion =
+        document.getElementById(
+            previousQuestionId
+        );
+
+
+    if (previousQuestion) {
+
+        showQuestion(
+            previousQuestion
+        );
+
+    }
+
+}
+
+
+/*
+ * ==========================================
+ * 確認画面表示
+ * ==========================================
+ */
+
+function showConfirmationArea() {
+
+
+    /*
+     * 現在の質問を非表示
+     */
+
+    if (currentQuestion) {
+
+        currentQuestion.classList.remove(
+            "active"
+        );
+
+    }
+
+
+    /*
+     * 回答確認内容を作成
+     */
+
+    createConfirmation();
+
+
+    /*
+     * 確認画面を表示
+     */
+
+    document.getElementById(
+        "confirmationArea"
+    ).style.display = "block";
+
+
+    /*
+     * 現在の質問を一旦クリア
+     */
+
+    currentQuestion = null;
+
+
+    /*
+     * ページ上部へ移動
+     */
+
+    window.scrollTo({
+
+        top: 0,
+
+        behavior: "smooth"
+
+    });
+
+}
+
+
+/*
+ * ==========================================
+ * 回答確認内容を作成
+ * ==========================================
+ */
+
+function createConfirmation() {
+
+
+    const confirmationAnswers =
+        document.getElementById(
+            "confirmationAnswers"
+        );
+
+
+    /*
+     * 一度空にする
+     */
+
+    confirmationAnswers.innerHTML = "";
+
+
+    /*
+     * 履歴に入っている質問だけ表示
+     *
+     * つまり分岐で通らなかった質問は
+     * 確認画面にも表示されない
+     */
+
+    questionHistory.forEach(
+        function (questionId) {
+
+
+            const question =
+                document.getElementById(
+                    questionId
+                );
+
+
+            if (!question) {
+
+                return;
+
+            }
+
+
+            /*
+             * 質問番号
+             */
+
+            const questionNumber =
+                question.querySelector(
+                    "h3 span"
+                );
+
+
+            /*
+             * 質問文
+             */
+
+            let questionText =
+                questionNumber
+                    ? questionNumber.textContent.trim()
+                    : "質問";
+
+
+            /*
+             * 回答
+             */
+
+            const answer =
+                getAnswer(question);
+
+
+            /*
+             * 行
+             */
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            /*
+             * 質問セル
+             */
+
+            const questionCell =
+                document.createElement(
+                    "th"
+                );
+
+
+            questionCell.textContent =
+                questionText;
+
+
+            /*
+             * 回答セル
+             */
+
+            const answerCell =
+                document.createElement(
+                    "td"
+                );
+
+
+            if (answer === "") {
+
+
+                const noAnswer =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                noAnswer.className =
+                    "noAnswer";
+
+
+                noAnswer.textContent =
+                    "未回答";
+
+
+                answerCell.appendChild(
+                    noAnswer
+                );
+
+
+            } else {
+
+
+                answerCell.textContent =
+                    answer;
+
+            }
+
+
+            /*
+             * 行へ追加
+             */
+
+            row.appendChild(
+                questionCell
+            );
+
+
+            row.appendChild(
+                answerCell
+            );
+
+
+            confirmationAnswers.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+
+/*
+ * ==========================================
+ * 最後の質問へ戻る
+ * ==========================================
+ */
+
+function returnToLastQuestion() {
+
+
+    /*
+     * 履歴がない場合
+     */
+
+    if (
+        questionHistory.length === 0
+    ) {
+
+        const firstQuestion =
+            document.querySelector(
+                ".question"
+            );
+
+
+        if (firstQuestion) {
+
+            showQuestion(
+                firstQuestion
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    /*
+     * 最後に回答した質問を取得
+     *
+     * この質問を履歴から一度取り除くことで、
+     * 「次へ」を押したときに
+     * 同じ質問が二重登録されるのを防ぐ
+     */
+
+    const lastQuestionId =
+        questionHistory.pop();
+
+
+    const lastQuestion =
+        document.getElementById(
+            lastQuestionId
+        );
+
+
+    if (lastQuestion) {
+
+        showQuestion(
+            lastQuestion
+        );
+
+    }
+
+}
+
+
+/*
+ * ==========================================
+ * 回答送信
+ * ==========================================
+ */
+
+function submitForm() {
+
+
+    const form =
+        document.getElementById(
+            "answerForm"
+        );
+
+
+    /*
+     * 通常のフォーム送信
+     */
+
+    form.submit();
+
+}
+
+</script>
+
+
+</body>
+
+</html>

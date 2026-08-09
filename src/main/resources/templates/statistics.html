@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title th:text="${form.title} + ' - 回答統計'">
+        回答統計
+    </title>
+
+
+	<style>
+
+	    /* ========================================
+	       全体
+	    ======================================== */
+
+	    * {
+	        box-sizing: border-box;
+	    }
+
+
+	    body {
+
+	        margin: 0;
+
+	        min-height: 100vh;
+
+	        font-family:
+	            "Yu Mincho",
+	            "Hiragino Mincho ProN",
+	            "Noto Serif JP",
+	            serif;
+
+	        color: #403b4a;
+
+	        background:
+	            radial-gradient(
+	                circle at 15% 20%,
+	                rgba(221, 190, 211, 0.25),
+	                transparent 30%
+	            ),
+
+	            radial-gradient(
+	                circle at 85% 80%,
+	                rgba(185, 205, 198, 0.25),
+	                transparent 30%
+	            ),
+
+	            linear-gradient(
+	                135deg,
+	                #f8f5f2,
+	                #eee8ed
+	            );
+	    }
+
+
+	    /* ========================================
+	       背景装飾
+	    ======================================== */
+
+	    body::before {
+
+	        content: "蓮";
+
+	        position: fixed;
+
+	        right: -35px;
+	        bottom: -55px;
+
+	        font-size: 260px;
+
+	        color:
+	            rgba(155, 107, 142, 0.06);
+
+	        font-family:
+	            "Yu Mincho",
+	            serif;
+
+	        pointer-events: none;
+
+	        z-index: 0;
+	    }
+
+
+	    body::after {
+
+	        content: "狐";
+
+	        position: fixed;
+
+	        left: -25px;
+	        top: 80px;
+
+	        font-size: 180px;
+
+	        color:
+	            rgba(130, 111, 153, 0.045);
+
+	        font-family:
+	            "Yu Mincho",
+	            serif;
+
+	        pointer-events: none;
+
+	        z-index: 0;
+	    }
+
+
+	    /* ========================================
+	       メインコンテナ
+	    ======================================== */
+
+	    .container {
+
+	        position: relative;
+
+	        z-index: 1;
+
+	        width:
+	            min(1000px, calc(100% - 32px));
+
+	        margin: 0 auto;
+
+	        padding:
+	            50px 0 70px;
+	    }
+
+
+	    /* ========================================
+	       ヘッダー
+	    ======================================== */
+
+	    .pageHeader {
+
+	        text-align: center;
+
+	        margin-bottom: 35px;
+	    }
+
+
+	    .pageHeader::before {
+
+	        content: "◇　蓮　◇";
+
+	        display: block;
+
+	        margin-bottom: 10px;
+
+	        color: #a88bb2;
+
+	        font-size: 18px;
+
+	        letter-spacing: 5px;
+	    }
+
+
+	    .pageHeader h1 {
+
+	        margin: 0;
+
+	        color: #51455c;
+
+	        font-size: 32px;
+
+	        font-weight: normal;
+
+	        letter-spacing: 0.15em;
+	    }
+
+
+	    .formTitle {
+
+	        margin-top: 12px;
+
+	        color: #766b73;
+
+	        font-size: 14px;
+
+	        line-height: 1.8;
+	    }
+
+
+	    /* ========================================
+	       ナビゲーション
+	    ======================================== */
+
+	    .navigation {
+
+	        display: flex;
+
+	        justify-content: center;
+
+	        gap: 10px;
+
+	        flex-wrap: wrap;
+
+	        margin-bottom: 28px;
+	    }
+
+
+	    .navigation a {
+
+	        display: inline-block;
+
+	        padding:
+	            9px 17px;
+
+	        border:
+	            1px solid #d4c8d0;
+
+	        border-radius: 9px;
+
+	        background:
+	            rgba(255, 255, 255, 0.82);
+
+	        color: #665967;
+
+	        text-decoration: none;
+
+	        font-size: 14px;
+
+	        transition:
+	            background 0.2s,
+	            color 0.2s,
+	            transform 0.2s,
+	            box-shadow 0.2s;
+	    }
+
+
+	    .navigation a:hover {
+
+	        background: #f7f1f5;
+
+	        color: #9b6b8e;
+
+	        transform:
+	            translateY(-1px);
+
+	        box-shadow:
+	            0 5px 12px
+	            rgba(70, 50, 65, 0.10);
+	    }
+
+
+	    /* ========================================
+	       回答者数カード
+	    ======================================== */
+
+	    .summaryCard {
+
+	        background:
+	            rgba(255, 255, 255, 0.88);
+
+	        border:
+	            1px solid
+	            rgba(150, 125, 143, 0.25);
+
+	        border-radius: 18px;
+
+	        padding: 28px 32px;
+
+	        margin-bottom: 28px;
+
+	        box-shadow:
+	            0 12px 35px
+	            rgba(65, 47, 61, 0.09);
+
+	        backdrop-filter:
+	            blur(5px);
+	    }
+
+
+	    .summaryLabel {
+
+	        margin-bottom: 8px;
+
+	        color: #766b73;
+
+	        font-size: 14px;
+
+	        letter-spacing: 0.05em;
+	    }
+
+
+	    .summaryNumber {
+
+	        color: #80617a;
+
+	        font-size: 42px;
+
+	        font-weight: normal;
+
+	        line-height: 1.2;
+	    }
+
+
+	    .summaryNumber span {
+
+	        color: #6f626b;
+
+	        font-size: 17px;
+
+	        margin-left: 6px;
+	    }
+
+
+	    /* ========================================
+	       データなし
+	    ======================================== */
+
+	    .emptyState {
+
+	        margin-bottom: 28px;
+
+	        padding: 45px 25px;
+
+	        text-align: center;
+
+	        background:
+	            rgba(255, 255, 255, 0.86);
+
+	        border:
+	            1px solid
+	            rgba(150, 125, 143, 0.22);
+
+	        border-radius: 16px;
+
+	        box-shadow:
+	            0 8px 25px
+	            rgba(65, 47, 61, 0.07);
+
+	        color: #766b73;
+
+	        line-height: 1.8;
+	    }
+
+
+	    .emptyState p {
+
+	        margin: 5px 0;
+	    }
+
+
+	    /* ========================================
+	       質問カード
+	    ======================================== */
+
+	    .questionCard {
+
+	        margin-bottom: 25px;
+
+	        padding: 28px;
+
+	        background:
+	            rgba(255, 255, 255, 0.88);
+
+	        border:
+	            1px solid
+	            rgba(150, 125, 143, 0.23);
+
+	        border-radius: 16px;
+
+	        box-shadow:
+	            0 8px 25px
+	            rgba(65, 47, 61, 0.08);
+
+	        backdrop-filter:
+	            blur(5px);
+	    }
+
+
+	    /* ========================================
+	       質問ヘッダー
+	    ======================================== */
+
+	    .questionHeader {
+
+	        margin-bottom: 25px;
+
+	        padding-bottom: 18px;
+
+	        border-bottom:
+	            1px solid #e5dce3;
+	    }
+
+
+	    .questionNumber {
+
+	        margin-bottom: 6px;
+
+	        color: #a276ae;
+
+	        font-size: 14px;
+
+	        letter-spacing: 0.08em;
+	    }
+
+
+	    .questionTitle {
+
+	        margin: 0;
+
+	        color: #51445c;
+
+	        font-size: 21px;
+
+	        font-weight: normal;
+
+	        line-height: 1.7;
+
+	        word-break: break-word;
+	    }
+
+
+	    .required {
+
+	        color: #a45f7d;
+
+	        font-size: 12px;
+
+	        margin-left: 6px;
+
+	        font-weight: normal;
+	    }
+
+
+	    /* ========================================
+	       回答率
+	    ======================================== */
+
+	    .answerRate {
+
+	        margin-bottom: 28px;
+
+	        padding:
+	            18px 20px;
+
+	        background:
+	            linear-gradient(
+	                135deg,
+	                rgba(247, 241, 245, 0.95),
+	                rgba(242, 246, 244, 0.95)
+	            );
+
+	        border:
+	            1px solid #ddd2da;
+
+	        border-radius: 12px;
+	    }
+
+
+	    .answerRateHeader {
+
+	        display: flex;
+
+	        justify-content: space-between;
+
+	        align-items: center;
+
+	        gap: 15px;
+
+	        margin-bottom: 9px;
+	    }
+
+
+	    .answerRateLabel {
+
+	        color: #6f626b;
+
+	        font-size: 13px;
+	    }
+
+
+	    .answerRateValue {
+
+	        color: #80617a;
+
+	        font-size: 17px;
+
+	        font-weight: bold;
+	    }
+
+
+	    .rateBar {
+
+	        width: 100%;
+
+	        height: 10px;
+
+	        overflow: hidden;
+
+	        background: #e8e0e6;
+
+	        border-radius: 10px;
+	    }
+
+
+	    .rateBarInner {
+
+	        height: 100%;
+
+	        background:
+	            linear-gradient(
+	                to right,
+	                #9b6b8e,
+	                #b18aba
+	            );
+
+	        border-radius: 10px;
+
+	        transition:
+	            width 0.4s ease;
+	    }
+
+
+	    /* ========================================
+	       セクションタイトル
+	    ======================================== */
+
+	    .sectionTitle {
+
+	        margin:
+	            25px 0 17px;
+
+	        padding-left: 13px;
+
+	        border-left:
+	            3px solid #b18abd;
+
+	        color: #5b4b66;
+
+	        font-size: 17px;
+
+	        font-weight: normal;
+	    }
+
+
+	    /* ========================================
+	       選択肢集計
+	    ======================================== */
+
+	    .choiceRow {
+
+	        margin-bottom: 20px;
+
+	        padding:
+	            15px 17px;
+
+	        background:
+	            #faf7fc;
+
+	        border:
+	            1px solid #eee5f1;
+
+	        border-radius: 10px;
+	    }
+
+
+	    .choiceRow:last-child {
+
+	        margin-bottom: 0;
+	    }
+
+
+	    .choiceHeader {
+
+	        display: flex;
+
+	        justify-content: space-between;
+
+	        align-items: center;
+
+	        gap: 12px;
+
+	        margin-bottom: 8px;
+	    }
+
+
+	    .choiceName {
+
+	        color: #5d5265;
+
+	        font-size: 14px;
+
+	        font-weight: bold;
+
+	        word-break: break-word;
+	    }
+
+
+	    .choiceResult {
+
+	        color: #766c75;
+
+	        font-size: 13px;
+
+	        white-space: nowrap;
+	    }
+
+
+	    .choiceResult strong {
+
+	        color: #80617a;
+
+	        font-size: 15px;
+	    }
+
+
+	    .choiceBar {
+
+	        width: 100%;
+
+	        height: 11px;
+
+	        overflow: hidden;
+
+	        background: #e8e1e9;
+
+	        border-radius: 10px;
+	    }
+
+
+	    .choiceBarInner {
+
+	        height: 100%;
+
+	        background:
+	            linear-gradient(
+	                to right,
+	                #92729e,
+	                #b18aba
+	            );
+
+	        border-radius: 10px;
+
+	        transition:
+	            width 0.4s ease;
+	    }
+
+
+	    /* ========================================
+	       チェックボックス注意書き
+	    ======================================== */
+
+	    .note {
+
+	        margin-top: 20px;
+
+	        padding:
+	            13px 16px;
+
+	        color: #766c7c;
+
+	        background:
+	            #faf7fc;
+
+	        border-left:
+	            3px solid #c0a3c8;
+
+	        border-radius: 5px;
+
+	        font-size: 13px;
+
+	        line-height: 1.8;
+	    }
+
+
+	    /* ========================================
+	       記述式回答
+	    ======================================== */
+
+	    .textAnswerSummary {
+
+	        margin-bottom: 15px;
+
+	        padding: 17px 20px;
+
+	        background:
+	            linear-gradient(
+	                135deg,
+	                #faf7fc,
+	                #f4f8f5
+	            );
+
+	        border:
+	            1px solid #e3d9e2;
+
+	        border-radius: 10px;
+	    }
+
+
+	    .textAnswerNumber {
+
+	        color: #80617a;
+
+	        font-size: 25px;
+
+	        line-height: 1.3;
+	    }
+
+
+	    .textAnswerNumber span {
+
+	        color: #6f626b;
+
+	        font-size: 14px;
+
+	        font-weight: normal;
+
+	        margin-left: 4px;
+	    }
+
+
+	    details {
+
+	        margin-top: 12px;
+
+	        border-top:
+	            1px solid #e5dce3;
+	    }
+
+
+	    summary {
+
+	        padding:
+	            14px 3px;
+
+	        cursor: pointer;
+
+	        color: #68576b;
+
+	        font-size: 14px;
+
+	        font-weight: bold;
+
+	        transition:
+	            color 0.2s;
+	    }
+
+
+	    summary:hover {
+
+	        color: #9b6b8e;
+	    }
+
+
+	    .textAnswer {
+
+	        margin-bottom: 10px;
+
+	        padding:
+	            15px 17px;
+
+	        background:
+	            #faf7fc;
+
+	        border:
+	            1px solid #eee5f1;
+
+	        border-radius: 9px;
+
+	        color: #4f4650;
+
+	        white-space: pre-wrap;
+
+	        word-break: break-word;
+
+	        line-height: 1.7;
+	    }
+
+
+	    .answerNumber {
+
+	        margin-bottom: 6px;
+
+	        color: #9a8e98;
+
+	        font-size: 12px;
+	    }
+
+
+	    /* ========================================
+	       回答なし
+	    ======================================== */
+
+	    .noAnswer {
+
+	        padding:
+	            15px 17px;
+
+	        background:
+	            #faf7fc;
+
+	        border:
+	            1px solid #eee5f1;
+
+	        border-radius: 9px;
+
+	        color: #81757e;
+
+	        font-size: 13px;
+	    }
+
+
+	    /* ========================================
+	       フッター
+	    ======================================== */
+
+	    .footer {
+
+	        margin-top: 35px;
+
+	        text-align: center;
+	    }
+
+
+	    .footer a {
+
+	        color: #746873;
+
+	        text-decoration: none;
+
+	        font-size: 14px;
+
+	        border-bottom:
+	            1px solid transparent;
+
+	        transition:
+	            color 0.2s,
+	            border-color 0.2s;
+	    }
+
+
+	    .footer a:hover {
+
+	        color: #9b6b8e;
+
+	        border-bottom-color:
+	            #9b6b8e;
+	    }
+
+
+	    /* ========================================
+	       スマートフォン
+	    ======================================== */
+
+	    @media (max-width: 700px) {
+
+	        .container {
+
+	            width:
+	                calc(100% - 20px);
+
+	            padding:
+	                35px 0 50px;
+	        }
+
+
+	        .pageHeader {
+
+	            margin-bottom: 28px;
+	        }
+
+
+	        .pageHeader h1 {
+
+	            font-size: 26px;
+	        }
+
+
+	        .pageHeader::before {
+
+	            font-size: 16px;
+
+	            letter-spacing: 4px;
+	        }
+
+
+	        .navigation {
+
+	            justify-content: stretch;
+	        }
+
+
+	        .navigation a {
+
+	            flex: 1;
+
+	            text-align: center;
+	        }
+
+
+	        .summaryCard {
+
+	            padding: 23px 20px;
+
+	            border-radius: 14px;
+	        }
+
+
+	        .summaryNumber {
+
+	            font-size: 36px;
+	        }
+
+
+	        .questionCard {
+
+	            padding: 20px 18px;
+
+	            border-radius: 14px;
+	        }
+
+
+	        .questionTitle {
+
+	            font-size: 18px;
+	        }
+
+
+	        .answerRate {
+
+	            padding:
+	                16px;
+	        }
+
+
+	        .choiceRow {
+
+	            padding:
+	                14px;
+	        }
+
+
+	        .choiceHeader {
+
+	            align-items: flex-start;
+
+	            flex-direction: column;
+
+	            gap: 4px;
+	        }
+
+
+	        .choiceResult {
+
+	            white-space: normal;
+	        }
+
+
+	        .sectionTitle {
+
+	            font-size: 16px;
+	        }
+
+
+	        .textAnswerSummary {
+
+	            padding:
+	                15px 17px;
+	        }
+
+	    }
+
+	</style>
+
+
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!--
+        ==========================================
+        ヘッダー
+        ==========================================
+    -->
+
+    <div class="pageHeader">
+
+        <h1>
+            回答統計
+        </h1>
+
+        <div
+            class="formTitle"
+            th:text="${form.title}">
+
+            フォーム名
+
+        </div>
+
+    </div>
+
+
+    <!--
+        ==========================================
+        ナビゲーション
+        ==========================================
+    -->
+
+    <div class="navigation">
+
+        <a
+            th:href="@{/form/{id}(id=${form.id})}">
+
+            フォーム詳細
+
+        </a>
+
+
+        <a
+            th:href="@{/form/{id}/responses(id=${form.id})}">
+
+            回答一覧
+
+        </a>
+
+    </div>
+
+
+    <!--
+        ==========================================
+        回答者数
+        ==========================================
+    -->
+
+    <div class="summaryCard">
+
+        <div class="summaryLabel">
+
+            回答者数
+
+        </div>
+
+
+        <div class="summaryNumber">
+
+            <strong
+                th:text="${responses.size()}">
+
+                0
+
+            </strong>
+
+            <span>
+
+                人
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!--
+        ==========================================
+        回答がない場合
+        ==========================================
+    -->
+
+    <div
+        class="emptyState"
+        th:if="${responses.isEmpty()}">
+
+        <p>
+
+            まだ回答がありません。
+
+        </p>
+
+        <p>
+
+            フォームを公開すると回答を集めることができます。
+
+        </p>
+
+    </div>
+
+
+    <!--
+        ==========================================
+        質問一覧
+        ==========================================
+    -->
+
+    <div
+        th:each="question : ${questions}"
+        class="questionCard">
+
+
+        <!--
+            ======================================
+            質問タイトル
+            ======================================
+        -->
+
+        <div class="questionHeader">
+
+
+            <div class="questionNumber">
+
+                Q<span
+                    th:text="${question.questionOrder}">
+
+                    1
+
+                </span>
+
+            </div>
+
+
+            <h2 class="questionTitle">
+
+                <span
+                    th:text="${question.questionText}">
+
+                    質問
+
+                </span>
+
+
+                <span
+                    class="required"
+                    th:if="${question.required}">
+
+                    （必須）
+
+                </span>
+
+            </h2>
+
+        </div>
+
+
+        <!--
+            ======================================
+            回答率
+            ======================================
+        -->
+
+        <div class="answerRate">
+
+
+            <div class="answerRateHeader">
+
+                <span class="answerRateLabel">
+
+                    回答率
+
+                </span>
+
+
+                <span
+                    class="answerRateValue"
+                    th:text="${answerRates[question.id]} + '%'">
+
+                    0%
+
+                </span>
+
+            </div>
+
+
+            <div class="rateBar">
+
+                <div
+                    class="rateBarInner"
+                    th:style="'width:' + ${answerRates[question.id]} + '%'">
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!--
+            ======================================
+            ラジオボタン
+            ======================================
+        -->
+
+        <div
+            th:if="${question.questionType == 'radio'}">
+
+
+            <h3 class="sectionTitle">
+
+                選択肢別集計
+
+            </h3>
+
+
+            <div
+                th:each="choice : ${questionChoices[question.id]}"
+                class="choiceRow">
+
+
+                <div class="choiceHeader">
+
+
+                    <span
+                        class="choiceName"
+                        th:text="${choice.choiceText}">
+
+                        選択肢
+
+                    </span>
+
+
+                    <span class="choiceResult">
+
+
+                        <strong
+                            th:text="${choiceCounts[question.id][choice.choiceText]}">
+
+                            0
+
+                        </strong>
+
+                        票
+
+
+                        <span
+                            th:with="
+                                count=${choiceCounts[question.id][choice.choiceText]},
+                                total=${responses.size()}
+                            "
+                            th:text="
+                                '（' +
+                                (
+                                    ${total > 0
+                                        ? #numbers.formatDecimal(
+                                            count * 100.0 / total,
+                                            1,
+                                            1
+                                        )
+                                        : 0
+                                    }
+                                ) +
+                                '%）'
+                            ">
+
+                            （0%）
+
+                        </span>
+
+
+                    </span>
+
+                </div>
+
+
+                <div class="choiceBar">
+
+
+                    <div
+                        class="choiceBarInner"
+                        th:with="
+                            count=${choiceCounts[question.id][choice.choiceText]},
+                            total=${responses.size()}
+                        "
+                        th:style="
+                            'width:' +
+                            (
+                                ${total > 0
+                                    ? count * 100.0 / total
+                                    : 0
+                                }
+                            ) +
+                            '%'
+                        ">
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!--
+            ======================================
+            チェックボックス
+            ======================================
+        -->
+
+        <div
+            th:if="${question.questionType == 'checkbox'}">
+
+
+            <h3 class="sectionTitle">
+
+                選択肢別集計
+
+            </h3>
+
+
+            <div
+                th:each="choice : ${questionChoices[question.id]}"
+                class="choiceRow">
+
+
+                <div class="choiceHeader">
+
+
+                    <span
+                        class="choiceName"
+                        th:text="${choice.choiceText}">
+
+                        選択肢
+
+                    </span>
+
+
+                    <span class="choiceResult">
+
+
+                        <strong
+                            th:text="${choiceCounts[question.id][choice.choiceText]}">
+
+                            0
+
+                        </strong>
+
+                        選択
+
+
+                        <span
+                            th:with="
+                                count=${choiceCounts[question.id][choice.choiceText]},
+                                total=${responses.size()}
+                            "
+                            th:text="
+                                '（' +
+                                (
+                                    ${total > 0
+                                        ? #numbers.formatDecimal(
+                                            count * 100.0 / total,
+                                            1,
+                                            1
+                                        )
+                                        : 0
+                                    }
+                                ) +
+                                '%）'
+                            ">
+
+                            （0%）
+
+                        </span>
+
+
+                    </span>
+
+                </div>
+
+
+                <div class="choiceBar">
+
+
+                    <div
+                        class="choiceBarInner"
+                        th:with="
+                            count=${choiceCounts[question.id][choice.choiceText]},
+                            total=${responses.size()}
+                        "
+                        th:style="
+                            'width:' +
+                            (
+                                ${total > 0
+                                    ? count * 100.0 / total
+                                    : 0
+                                }
+                            ) +
+                            '%'
+                        ">
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <div class="note">
+
+                ※チェックボックスは複数回答できるため、
+                選択数の合計は回答者数を超える場合があります。
+
+            </div>
+
+        </div>
+
+
+        <!--
+            ======================================
+            記述式
+            ======================================
+        -->
+
+        <div
+            th:if="${question.questionType == 'text'}">
+
+
+            <h3 class="sectionTitle">
+
+                回答
+
+            </h3>
+
+
+            <div class="textAnswerSummary">
+
+
+                <div class="summaryLabel">
+
+                    回答数
+
+                </div>
+
+
+                <div class="textAnswerNumber">
+
+
+                    <strong
+                        th:text="${questionAnswers[question.id].size()}">
+
+                        0
+
+                    </strong>
+
+
+                    <span>
+
+                        件
+
+                    </span>
+
+
+                </div>
+
+            </div>
+
+
+            <div
+                th:if="${questionAnswers[question.id].isEmpty()}"
+                class="noAnswer">
+
+                まだ回答がありません。
+
+            </div>
+
+
+            <details
+                th:if="${!questionAnswers[question.id].isEmpty()}">
+
+
+                <summary>
+
+                    回答内容を見る
+
+                </summary>
+
+
+                <div
+                    th:each="
+                        answer,
+                        stat : ${questionAnswers[question.id]}
+                    "
+                    class="textAnswer">
+
+
+                    <div class="answerNumber">
+
+                        回答
+                        <span
+                            th:text="${stat.count}">
+
+                            1
+
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        th:text="${answer.answerText}">
+
+                        回答内容
+
+                    </div>
+
+
+                </div>
+
+
+            </details>
+
+        </div>
+
+    </div>
+
+
+    <!--
+        ==========================================
+        フッター
+        ==========================================
+    -->
+
+    <div class="footer">
+
+        <a
+            th:href="@{/form/{id}(id=${form.id})}">
+
+            フォーム詳細へ戻る
+
+        </a>
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+
+<html
+    xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>フォーム名を編集</title>
+
+
+    <style>
+
+        /* ========================================
+           全体
+        ======================================== */
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            font-family:
+                "Yu Mincho",
+                "Hiragino Mincho ProN",
+                "Noto Serif JP",
+                serif;
+
+            color: #403b4a;
+
+            background:
+
+                radial-gradient(
+                    circle at 15% 20%,
+                    rgba(221, 190, 211, 0.25),
+                    transparent 30%
+                ),
+
+                radial-gradient(
+                    circle at 85% 80%,
+                    rgba(185, 205, 198, 0.25),
+                    transparent 30%
+                ),
+
+                linear-gradient(
+                    135deg,
+                    #f8f5f2,
+                    #eee8ed
+                );
+        }
+
+
+        /* ========================================
+           背景装飾
+        ======================================== */
+
+        body::before {
+
+            content: "蓮";
+
+            position: fixed;
+
+            right: -35px;
+
+            bottom: -55px;
+
+            font-size: 260px;
+
+            color:
+                rgba(155, 107, 142, 0.06);
+
+            font-family:
+                "Yu Mincho",
+                serif;
+
+            pointer-events: none;
+
+            z-index: 0;
+        }
+
+
+        body::after {
+
+            content: "狐";
+
+            position: fixed;
+
+            left: -25px;
+
+            top: 80px;
+
+            font-size: 180px;
+
+            color:
+                rgba(130, 111, 153, 0.045);
+
+            font-family:
+                "Yu Mincho",
+                serif;
+
+            pointer-events: none;
+
+            z-index: 0;
+        }
+
+
+        /* ========================================
+           メイン
+        ======================================== */
+
+        .page {
+
+            position: relative;
+
+            z-index: 1;
+
+            width:
+                min(800px, 92%);
+
+            margin:
+                0 auto;
+
+            padding:
+                50px 0 70px;
+        }
+
+
+        /* ========================================
+           ヘッダー
+        ======================================== */
+
+        .header {
+
+            text-align: center;
+
+            margin-bottom: 35px;
+        }
+
+
+        .headerMark {
+
+            margin-bottom: 8px;
+
+            color: #9b6b8e;
+
+            font-size: 30px;
+
+            letter-spacing: 5px;
+        }
+
+
+        h1 {
+
+            margin: 0;
+
+            color: #51455c;
+
+            font-size: 30px;
+
+            font-weight: normal;
+
+            letter-spacing: 0.12em;
+        }
+
+
+        .decorativeLine {
+
+            width: 80px;
+
+            height: 1px;
+
+            margin:
+                18px auto;
+
+            background:
+
+                linear-gradient(
+                    to right,
+                    transparent,
+                    #b999ac,
+                    transparent
+                );
+        }
+
+
+        .subtitle {
+
+            margin: 0;
+
+            color: #766b73;
+
+            font-size: 14px;
+
+            line-height: 1.8;
+        }
+
+
+        /* ========================================
+           編集カード
+        ======================================== */
+
+        .formCard {
+
+            background:
+                rgba(255, 255, 255, 0.88);
+
+            border:
+                1px solid
+                rgba(150, 125, 143, 0.25);
+
+            border-radius: 18px;
+
+            padding: 38px;
+
+            box-shadow:
+                0 12px 35px
+                rgba(65, 47, 61, 0.10);
+
+            backdrop-filter:
+                blur(5px);
+        }
+
+
+        /* ========================================
+           入力項目
+        ======================================== */
+
+        .field {
+
+            margin-bottom: 28px;
+        }
+
+
+        .field:last-of-type {
+
+            margin-bottom: 10px;
+        }
+
+
+        .fieldLabel {
+
+            display: block;
+
+            margin-bottom: 10px;
+
+            color: #4b3d47;
+
+            font-size: 16px;
+
+            font-weight: bold;
+        }
+
+
+        .requiredMark {
+
+            margin-left: 6px;
+
+            color: #a45f7d;
+
+            font-size: 12px;
+
+            font-weight: normal;
+        }
+
+
+        /* ========================================
+           テキスト入力
+        ======================================== */
+
+        input[type="text"],
+        textarea {
+
+            width: 100%;
+
+            padding:
+                13px 15px;
+
+            border:
+                1px solid #d4c8d0;
+
+            border-radius: 9px;
+
+            background:
+                #fffdfd;
+
+            color:
+                #332b32;
+
+            font-family:
+                inherit;
+
+            font-size:
+                15px;
+
+            line-height:
+                1.7;
+
+            outline:
+                none;
+
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s,
+                background 0.2s;
+        }
+
+
+        input[type="text"]:focus,
+        textarea:focus {
+
+            border-color:
+                #9b6b8e;
+
+            background:
+                #ffffff;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(155, 107, 142, 0.13);
+        }
+
+
+        input[type="text"] {
+
+            height:
+                48px;
+        }
+
+
+        textarea {
+
+            min-height:
+                150px;
+
+            resize:
+                vertical;
+        }
+
+
+        /* ========================================
+           入力欄の補足
+        ======================================== */
+
+        .fieldDescription {
+
+            margin:
+                7px 0 0;
+
+            color:
+                #897d86;
+
+            font-size:
+                12px;
+
+            line-height:
+                1.7;
+        }
+
+
+        /* ========================================
+           保存ボタン
+        ======================================== */
+
+        .saveButton {
+
+            width:
+                100%;
+
+            margin-top:
+                18px;
+
+            padding:
+                14px;
+
+            border:
+                none;
+
+            border-radius:
+                9px;
+
+            background:
+
+                linear-gradient(
+                    135deg,
+                    #9b6b8e,
+                    #80617a
+                );
+
+            color:
+                white;
+
+            font-family:
+                inherit;
+
+            font-size:
+                16px;
+
+            letter-spacing:
+                0.08em;
+
+            cursor:
+                pointer;
+
+            box-shadow:
+                0 5px 14px
+                rgba(128, 97, 122, 0.20);
+
+            transition:
+                transform 0.15s,
+                box-shadow 0.15s;
+        }
+
+
+        .saveButton:hover {
+
+            transform:
+                translateY(-1px);
+
+            box-shadow:
+                0 8px 18px
+                rgba(128, 97, 122, 0.27);
+        }
+
+
+        .saveButton:active {
+
+            transform:
+                translateY(0);
+        }
+
+
+        /* ========================================
+           キャンセル
+        ======================================== */
+
+        .bottom {
+
+            text-align:
+                center;
+
+            margin-top:
+                25px;
+        }
+
+
+        .cancelLink {
+
+            color:
+                #746873;
+
+            text-decoration:
+                none;
+
+            font-size:
+                14px;
+
+            border-bottom:
+                1px solid transparent;
+
+            transition:
+                color 0.2s,
+                border-color 0.2s;
+        }
+
+
+        .cancelLink:hover {
+
+            color:
+                #9b6b8e;
+
+            border-bottom-color:
+                #9b6b8e;
+        }
+
+
+        /* ========================================
+           スマートフォン
+        ======================================== */
+
+        @media (max-width: 600px) {
+
+            .page {
+
+                width:
+                    calc(100% - 24px);
+
+                padding:
+                    30px 0 50px;
+            }
+
+
+            .header {
+
+                margin-bottom:
+                    28px;
+            }
+
+
+            .headerMark {
+
+                font-size:
+                    26px;
+            }
+
+
+            h1 {
+
+                font-size:
+                    25px;
+
+                letter-spacing:
+                    0.08em;
+            }
+
+
+            .formCard {
+
+                padding:
+                    25px 18px;
+
+                border-radius:
+                    14px;
+            }
+
+
+            .fieldLabel {
+
+                font-size:
+                    15px;
+            }
+
+
+            input[type="text"] {
+
+                height:
+                    46px;
+            }
+
+
+            textarea {
+
+                min-height:
+                    140px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <main class="page">
+
+
+        <!-- =====================================
+             ヘッダー
+        ====================================== -->
+
+        <header class="header">
+
+
+            <div class="headerMark">
+
+                蓮
+
+            </div>
+
+
+            <h1>
+
+                フォーム名を編集
+
+            </h1>
+
+
+            <div class="decorativeLine"></div>
+
+
+            <p class="subtitle">
+
+                フォームのタイトルと説明を変更します
+
+            </p>
+
+
+        </header>
+
+
+        <!-- =====================================
+             編集フォーム
+        ====================================== -->
+
+        <form method="post"
+              class="formCard">
+
+
+            <!-- =================================
+                 フォームタイトル
+            ================================== -->
+
+            <div class="field">
+
+
+                <label
+                    class="fieldLabel"
+                    for="title">
+
+                    フォームタイトル
+
+                    <span class="requiredMark">
+
+                        必須
+
+                    </span>
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    th:value="${form.title}"
+                    placeholder="フォームのタイトルを入力してください"
+                    required>
+
+
+                <p class="fieldDescription">
+
+                    回答者に表示されるフォームの名前です。
+
+                </p>
+
+
+            </div>
+
+
+            <!-- =================================
+                 フォーム説明
+            ================================== -->
+
+            <div class="field">
+
+
+                <label
+                    class="fieldLabel"
+                    for="description">
+
+                    フォーム説明
+
+                </label>
+
+
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="5"
+                    placeholder="フォームについての説明を入力してください"
+                    th:text="${form.description}">
+                </textarea>
+
+
+                <p class="fieldDescription">
+
+                    フォームの目的や回答方法などを入力できます。
+
+                </p>
+
+
+            </div>
+
+
+            <!-- =================================
+                 保存
+            ================================== -->
+
+            <button
+                type="submit"
+                class="saveButton">
+
+                保存する
+
+            </button>
+
+
+        </form>
+
+
+        <!-- =====================================
+             キャンセル
+        ====================================== -->
+
+        <div class="bottom">
+
+
+            <a
+                href="javascript:history.back()"
+                class="cancelLink">
+
+                ← キャンセル
+
+            </a>
+
+
+        </div>
+
+
+    </main>
+
+
+</body>
+
+</html>

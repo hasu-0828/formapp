@@ -1,0 +1,457 @@
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>回答完了</title>
+
+
+<style>
+
+    /* ========================================
+       全体
+    ======================================== */
+
+    * {
+        box-sizing: border-box;
+    }
+
+
+    body {
+
+        margin: 0;
+
+        min-height: 100vh;
+
+        display: flex;
+
+        justify-content: center;
+
+        align-items: center;
+
+        font-family:
+            "Yu Mincho",
+            "Hiragino Mincho ProN",
+            "Noto Serif JP",
+            serif;
+
+        color: #eee8ee;
+
+        background:
+
+            radial-gradient(
+                circle at 20% 20%,
+                rgba(125, 87, 118, 0.22),
+                transparent 32%
+            ),
+
+            radial-gradient(
+                circle at 80% 80%,
+                rgba(78, 104, 96, 0.18),
+                transparent 32%
+            ),
+
+            linear-gradient(
+                135deg,
+                #29252b,
+                #211e24 50%,
+                #27232a
+            );
+
+        overflow: hidden;
+    }
+
+
+    /* ========================================
+       背景装飾
+    ======================================== */
+
+    body::before {
+
+        content: "蓮";
+
+        position: fixed;
+
+        right: -35px;
+
+        bottom: -60px;
+
+        font-size: 270px;
+
+        color:
+            rgba(183, 143, 177, 0.055);
+
+        font-family:
+            "Yu Mincho",
+            serif;
+
+        pointer-events: none;
+    }
+
+
+    body::after {
+
+        content: "狐";
+
+        position: fixed;
+
+        left: -30px;
+
+        top: 40px;
+
+        font-size: 190px;
+
+        color:
+            rgba(174, 156, 181, 0.035);
+
+        font-family:
+            "Yu Mincho",
+            serif;
+
+        pointer-events: none;
+    }
+
+
+    /* ========================================
+       メインカード
+    ======================================== */
+
+    .container {
+
+        position: relative;
+
+        z-index: 1;
+
+        width:
+            min(620px, calc(100% - 32px));
+
+        padding:
+            55px 45px;
+
+        text-align: center;
+
+        background:
+            rgba(48, 43, 50, 0.88);
+
+        border:
+            1px solid
+            rgba(183, 157, 181, 0.22);
+
+        border-radius: 20px;
+
+        box-shadow:
+            0 18px 50px
+            rgba(0, 0, 0, 0.35);
+
+        backdrop-filter:
+            blur(8px);
+    }
+
+
+    /* ========================================
+       装飾
+    ======================================== */
+
+    .ornament {
+
+        margin-bottom: 18px;
+
+        color: #b795b0;
+
+        font-size: 19px;
+
+        letter-spacing: 7px;
+    }
+
+
+    .mark {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        width: 72px;
+
+        height: 72px;
+
+        margin:
+            0 auto 25px;
+
+        border:
+            1px solid
+            rgba(183, 149, 176, 0.45);
+
+        border-radius: 50%;
+
+        color: #c7a9c0;
+
+        background:
+            rgba(125, 87, 118, 0.15);
+
+        font-size: 30px;
+
+        box-shadow:
+            0 0 25px
+            rgba(145, 101, 137, 0.10);
+    }
+
+
+    /* ========================================
+       タイトル
+    ======================================== */
+
+    h1 {
+
+        margin: 0;
+
+        color: #f1eaf0;
+
+        font-size: 30px;
+
+        font-weight: normal;
+
+        letter-spacing: 0.15em;
+
+        line-height: 1.6;
+    }
+
+
+    /* ========================================
+       区切り線
+    ======================================== */
+
+    .decorativeLine {
+
+        width: 90px;
+
+        height: 1px;
+
+        margin:
+            20px auto;
+
+        background:
+
+            linear-gradient(
+                to right,
+                transparent,
+                #9d7897,
+                transparent
+            );
+    }
+
+
+    /* ========================================
+       メッセージ
+    ======================================== */
+
+    .message {
+
+        margin: 0;
+
+        color: #c8bec8;
+
+        font-size: 15px;
+
+        line-height: 2;
+
+        letter-spacing: 0.04em;
+    }
+
+
+    .subMessage {
+
+        margin:
+            22px 0 0;
+
+        color: #938894;
+
+        font-size: 13px;
+
+        line-height: 1.8;
+    }
+
+
+    /* ========================================
+       完了表示
+    ======================================== */
+
+    .completeBox {
+
+        margin-top: 30px;
+
+        padding:
+            16px 20px;
+
+        background:
+            rgba(255, 255, 255, 0.035);
+
+        border:
+            1px solid
+            rgba(183, 157, 181, 0.14);
+
+        border-radius: 10px;
+
+        color: #a99eaa;
+
+        font-size: 13px;
+
+        line-height: 1.8;
+    }
+
+
+    /* ========================================
+       下部装飾
+    ======================================== */
+
+    .bottomOrnament {
+
+        margin-top: 30px;
+
+        color: #756a76;
+
+        font-size: 13px;
+
+        letter-spacing: 5px;
+    }
+
+
+    /* ========================================
+       スマートフォン
+    ======================================== */
+
+    @media (max-width: 600px) {
+
+        body {
+
+            padding:
+                20px 0;
+        }
+
+
+        .container {
+
+            width:
+                calc(100% - 24px);
+
+            padding:
+                40px 22px;
+
+            border-radius: 16px;
+        }
+
+
+        .ornament {
+
+            font-size: 16px;
+
+            letter-spacing: 5px;
+        }
+
+
+        .mark {
+
+            width: 62px;
+
+            height: 62px;
+
+            margin-bottom: 20px;
+
+            font-size: 26px;
+        }
+
+
+        h1 {
+
+            font-size: 25px;
+
+            letter-spacing: 0.10em;
+        }
+
+
+        .message {
+
+            font-size: 14px;
+        }
+
+
+        .subMessage {
+
+            font-size: 12px;
+        }
+
+
+        .completeBox {
+
+            font-size: 12px;
+
+            padding:
+                14px 15px;
+        }
+
+    }
+
+</style>
+
+
+<!-- =====================================
+     回答完了
+====================================== -->
+
+<div class="container">
+
+
+    <div class="ornament">
+
+        ◇　蓮　◇
+
+    </div>
+
+
+    <div class="mark">
+
+        ✓
+
+    </div>
+
+
+    <h1>
+
+        回答ありがとうございました
+
+    </h1>
+
+
+    <div class="decorativeLine"></div>
+
+
+    <p class="message">
+
+        回答を正常に受け付けました。
+
+    </p>
+
+
+    <p class="subMessage">
+
+        ご協力いただき、ありがとうございました。
+
+    </p>
+
+
+    <div class="completeBox">
+
+        この画面を閉じて終了してください。
+
+    </div>
+
+
+    <div class="bottomOrnament">
+
+        ―　✦　―
+
+    </div>
+
+
+</div>
